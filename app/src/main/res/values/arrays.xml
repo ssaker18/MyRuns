@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".RegisterActivity">
+
+    <string-array name="ui_profile_photo_picker_items">
+        <item android:id="@+id/camera_option">Take picture from camera</item>
+        <item android:id="@+id/gallery_option">Take a picture from the gallery</item>
+    </string-array>
+
+    <string-array name="activities_array">
+        <item>Running</item>
+        <item>Skating</item>
+        <item>Swimming</item>
+        <item>Skiing</item>
+        <item>Standing</item>
+        <item>Walking</item>
+        <item>Cycling</item>
+        <item>Cross-Country Skiing</item>
+        <item>Snowboarding</item>
+        <item>Mountain Biking</item>
+        <item>Wheelchair</item>
+        <item>Elliptical</item>
+        <item>Other</item>
+    </string-array>
+
+    <string-array name="input_type_array">
+        <item>Manual</item>
+        <item>GPS</item>
+        <item>Automatic</item>
+    </string-array>
+    <string-array name="entries_unit_preferences">
+        <item>Metric (Kilometers)</item>
+        <item>Imperial (Miles)</item>
+    </string-array>
+</resources>

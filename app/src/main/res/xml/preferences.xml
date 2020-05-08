@@ -1,0 +1,46 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:key="preferences"
+    >
+    <PreferenceCategory android:title="Application Settings">
+
+        <SwitchPreferenceCompat
+            android:summary="Posting your records anonymously"
+            android:title="Privacy Settings"
+            app:key="privacy_setting" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Unit Settings">
+
+        <ListPreference
+            android:dialogTitle="Unit Preference"
+            android:entries="@array/entries_unit_preferences"
+            android:entryValues="@array/entries_unit_preferences"
+            android:key="unit_preference"
+            android:summary="Select your preferred units"
+            android:title="Unit Preference" />
+
+        <PreferenceScreen
+            android:summary="https://www.cs.dartmouth.edu"
+            android:title="Visit Us">
+
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="https://www.cs.dartmouth.edu"/>
+
+        </PreferenceScreen>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Account Settings"
+        >
+        <Preference
+            android:key="sign_out"
+            android:title="Sign Out">
+
+        </Preference>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

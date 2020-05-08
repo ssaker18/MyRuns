@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">MyRuns3</string>
+    <string name="form_email_text">Email</string>
+    <string name="form_email_hint">Email</string>
+    <string name="form_password_hint">Password</string>
+    <string name="form_sign_in">SIGN IN</string>
+    <string name="form_register">REGISTER</string>
+    <string name="error_field_required">Field is required</string>
+    <string name="error_invalid_password">Incorrect Password</string>
+    <string name="error_invalid_email">Invalid Email Address</string>
+    <string name="error_password_too_short">Password should be at least 6 characters</string>
+    <string name="profile_gender_female">FEMALE</string>
+    <string name="profile_gender_male">MALE</string>
+    <string name="register_profile_major_hint">Major</string>
+    <string name="register_profile_major_class">Dartmouth Class</string>
+    <string name="register_profile_phone_hint">Phone</string>
+    <string name="register_profile_name_hint">Name</string>
+    <string name="profile_picture">Profile Picture</string>
+    <string name="register_change_profile_btn">CHANGE</string>
+    <string name="register_txt">REGISTER</string>
+    <string name="register_success">Successfully Registered</string>
+    <string name="settings">Settings</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="Invisible">Gone</string>
+    <string name="shared_preference_key">key</string>
+
+    <string name="title_start">Start</string>
+    <string name="title_history">History</string>
+    <string name="save_profile">SAVE</string>
+    <string name="profile_photo_file_name">profile_pic</string>
+    <string name="Settings">Settings</string>
+    <string name="edit_success">Updated Successfully</string>
+    <string name="save">SAVE</string>
+    <string name="delete">DELETE</string>
+    <string name="save_exercise_sucess">Saved Exercise!</string>
+
+</resources>

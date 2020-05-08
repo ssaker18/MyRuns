@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--    "external-path" Represents files in the root of the external storage area. The root path of this subdirectory -->
+<!--    is the same as the value returned by Environment.getExternalStorageDirectory(). -->
+
+<!--    Could of used "files-path" Represents files in the cache subdirectory of your app's internal storage area. -->
+<!--    The root path of this subdirectory is the same as the value returned by getCacheDir().-->
+
+<!--    name="name"-->
+<!--    A URI path segment. To enforce security, this value hides the name of the subdirectory you're sharing. -->
+<!--    The subdirectory name for this value is contained in the path attribute.-->
+<!--    path="path"-->
+<!--    The subdirectory you're sharing. While the name attribute is a URI path segment, the path value is -->
+<!--    an actual subdirectory name. Notice that the value refers to a subdirectory, not an individual file or files. You can't share a single file by its file name, nor can you specify a subset of files using wildcards.-->
+<!--    -->
+<paths>
+    <external-path
+        name="images"
+        path="Android/data/com.example.sunshine.myruns3/files/Pictures"/>
+</paths>
