@@ -1,4 +1,4 @@
-package com.example.sunshine.myruns3;
+package com.example.sunshine.myruns4;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,8 +11,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.example.sunshine.myruns3.fragments.HistoryFragment;
-import com.example.sunshine.myruns3.fragments.StartFragment;
+import com.example.sunshine.myruns4.fragments.HistoryFragment;
+import com.example.sunshine.myruns4.fragments.StartFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;

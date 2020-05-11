@@ -1,4 +1,4 @@
-package com.example.sunshine.myruns3.fragments;
+package com.example.sunshine.myruns4.fragments;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,19 +18,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.sunshine.myruns3.ManualEntryActivity;
-import com.example.sunshine.myruns3.R;
-import com.example.sunshine.myruns3.adapters.HistoryAdapter;
-import com.example.sunshine.myruns3.database.ExerciseDataSource;
-import com.example.sunshine.myruns3.database.ExerciseListLoader;
-import com.example.sunshine.myruns3.models.ExerciseEntry;
+import com.example.sunshine.myruns4.ManualEntryActivity;
+import com.example.sunshine.myruns4.R;
+import com.example.sunshine.myruns4.adapters.HistoryAdapter;
+import com.example.sunshine.myruns4.database.ExerciseDataSource;
+import com.example.sunshine.myruns4.database.ExerciseListLoader;
+import com.example.sunshine.myruns4.models.ExerciseEntry;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import static com.example.sunshine.myruns3.ManualEntryActivity.IMPERIAL_MILES;
-import static com.example.sunshine.myruns3.ManualEntryActivity.MILE_CONVERSION_RATE;
+import static com.example.sunshine.myruns4.ManualEntryActivity.IMPERIAL_MILES;
+import static com.example.sunshine.myruns4.ManualEntryActivity.MILE_CONVERSION_RATE;
 
 
 public class HistoryFragment extends Fragment

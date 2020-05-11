@@ -1,4 +1,4 @@
-package com.example.sunshine.myruns3.fragments;
+package com.example.sunshine.myruns4.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,8 +7,8 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
-import com.example.sunshine.myruns3.LoginActivity;
-import com.example.sunshine.myruns3.R;
+import com.example.sunshine.myruns4.LoginActivity;
+import com.example.sunshine.myruns4.R;
 
 
 public class SettingsFragment extends PreferenceFragmentCompat implements Preference.OnPreferenceClickListener {

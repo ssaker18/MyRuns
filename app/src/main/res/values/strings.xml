@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MyRuns3</string>
+    <string name="app_name">MyRuns4</string>
     <string name="form_email_text">Email</string>
     <string name="form_email_hint">Email</string>
     <string name="form_password_hint">Password</string>
@@ -33,5 +33,6 @@
     <string name="save">SAVE</string>
     <string name="delete">DELETE</string>
     <string name="save_exercise_sucess">Saved Exercise!</string>
+    <string name="map">Map</string>
 
 </resources>

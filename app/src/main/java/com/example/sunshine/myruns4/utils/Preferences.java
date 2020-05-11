@@ -1,11 +1,11 @@
-package com.example.sunshine.myruns3.utils;
+package com.example.sunshine.myruns4.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
 
-import com.example.sunshine.myruns3.R;
+import com.example.sunshine.myruns4.R;
 
 
 public class Preferences {

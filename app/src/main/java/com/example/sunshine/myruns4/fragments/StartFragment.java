@@ -1,4 +1,4 @@
-package com.example.sunshine.myruns3.fragments;
+package com.example.sunshine.myruns4.fragments;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -15,9 +15,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
-import com.example.sunshine.myruns3.R;
-import com.example.sunshine.myruns3.ManualEntryActivity;
-import com.example.sunshine.myruns3.MapActivity;
+import com.example.sunshine.myruns4.R;
+import com.example.sunshine.myruns4.ManualEntryActivity;
+import com.example.sunshine.myruns4.MapActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class StartFragment extends Fragment implements View.OnClickListener {
