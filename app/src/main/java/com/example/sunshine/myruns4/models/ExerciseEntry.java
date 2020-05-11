@@ -1,4 +1,4 @@
-package com.example.sunshine.myruns3.models;
+package com.example.sunshine.myruns4.models;
 
 public class ExerciseEntry {
     private Long id;

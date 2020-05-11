@@ -1,4 +1,4 @@
-package com.example.sunshine.myruns3.database;
+package com.example.sunshine.myruns4.database;
 
 import android.app.Activity;
 import android.content.Context;
@@ -6,8 +6,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.sunshine.myruns3.R;
-import com.example.sunshine.myruns3.models.ExerciseEntry;
+import com.example.sunshine.myruns4.R;
+import com.example.sunshine.myruns4.models.ExerciseEntry;
 
 
 /*

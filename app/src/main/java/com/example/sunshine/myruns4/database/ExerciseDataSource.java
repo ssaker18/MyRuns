@@ -1,4 +1,4 @@
-package com.example.sunshine.myruns3.database;
+package com.example.sunshine.myruns4.database;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
-import com.example.sunshine.myruns3.models.ExerciseEntry;
+import com.example.sunshine.myruns4.models.ExerciseEntry;
 
 import java.util.ArrayList;
 

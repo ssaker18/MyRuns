@@ -1,4 +1,4 @@
-package com.example.sunshine.myruns3.adapters;
+package com.example.sunshine.myruns4.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -11,8 +11,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.example.sunshine.myruns3.R;
-import com.example.sunshine.myruns3.models.ManualEntryModel;
+import com.example.sunshine.myruns4.R;
+import com.example.sunshine.myruns4.models.ManualEntryModel;
 
 import java.util.ArrayList;
 

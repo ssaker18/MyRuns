@@ -1,4 +1,4 @@
-package com.example.sunshine.myruns3;
+package com.example.sunshine.myruns4;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 
-import com.example.sunshine.myruns3.fragments.SettingsFragment;
+import com.example.sunshine.myruns4.fragments.SettingsFragment;
 
 public class Settings extends AppCompatActivity{
 

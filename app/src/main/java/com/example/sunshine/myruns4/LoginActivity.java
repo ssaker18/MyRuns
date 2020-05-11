@@ -1,4 +1,4 @@
-package com.example.sunshine.myruns3;
+package com.example.sunshine.myruns4;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -11,7 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.example.sunshine.myruns3.utils.Preferences;
+import com.example.sunshine.myruns4.utils.Preferences;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.Objects;

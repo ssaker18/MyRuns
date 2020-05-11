@@ -1,4 +1,4 @@
-package com.example.sunshine.myruns3.adapters;
+package com.example.sunshine.myruns4.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,8 +9,8 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.sunshine.myruns3.R;
-import com.example.sunshine.myruns3.models.ExerciseEntry;
+import com.example.sunshine.myruns4.R;
+import com.example.sunshine.myruns4.models.ExerciseEntry;
 
 import java.util.ArrayList;
 

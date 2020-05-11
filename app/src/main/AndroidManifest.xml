@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.sunshine.myruns3">
+    package="com.example.sunshine.myruns4">
 
     <uses-feature android:name="android.hardware.camera" />
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -14,22 +15,25 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.example.sunshine.myruns3.Settings"></activity>
-        <activity android:name="com.example.sunshine.myruns3.MapActivity" />
-        <activity android:name="com.example.sunshine.myruns3.ManualEntryActivity"
+        <activity
+            android:name="com.example.sunshine.myruns4.MapFragmentActivity"
+            android:label="@string/map" />
+        <activity android:name="com.example.sunshine.myruns4.Settings" />
+        <activity android:name="com.example.sunshine.myruns4.MapActivity" />
+        <activity android:name="com.example.sunshine.myruns4.ManualEntryActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="singleInstance"/>
         <activity
-            android:name="com.example.sunshine.myruns3.MainActivity"
+            android:name="com.example.sunshine.myruns4.MainActivity"
             android:label="MainActivity"
             android:launchMode="singleInstance" />
         <activity android:name="com.soundcloud.android.crop.CropImageActivity" />
         <activity
-            android:name="com.example.sunshine.myruns3.RegisterActivity"
+            android:name="com.example.sunshine.myruns4.RegisterActivity"
             android:label="Sign Up" />
         <activity
-            android:name="com.example.sunshine.myruns3.LoginActivity"
-            android:label="MyRuns3">
+            android:name="com.example.sunshine.myruns4.LoginActivity"
+            android:label="myruns4">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -45,6 +49,9 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_path" />
         </provider>
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value= "@string/google_maps_key" />
     </application>
 
 </manifest>

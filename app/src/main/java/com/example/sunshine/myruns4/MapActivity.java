@@ -1,8 +1,9 @@
-package com.example.sunshine.myruns3;
+package com.example.sunshine.myruns4;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 
@@ -20,6 +21,9 @@ public class MapActivity extends AppCompatActivity {
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setTitle("Map Activity");
+
+        // set up map fragment view
+        startActivity(new Intent(this, MapFragmentActivity.class));
     }
 
     // handles cases when back button is clicked
