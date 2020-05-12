@@ -95,6 +95,8 @@ public class StartFragment extends Fragment implements View.OnClickListener {
                 } else {
                     // GPS or Automatic: Launch Map Activity
                     intent = new Intent(getContext(), MapActivity.class);
+                    intent.putExtra("InputType", input_type);
+                    intent.putExtra("Activity", activity_type);
                     intent.putExtra(SOURCE, FRAGMENT_NAME);
                 }
             }

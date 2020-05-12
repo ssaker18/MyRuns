@@ -1,6 +1,9 @@
 package com.example.sunshine.myruns4.models;
 
-public class ExerciseEntry {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class ExerciseEntry implements Parcelable {
     private Long id;
 
     private String mInputType;        // Manual, GPS or automatic
@@ -34,6 +37,71 @@ public class ExerciseEntry {
      */
     public ExerciseEntry() {
     }
+
+    protected ExerciseEntry(Parcel in) {
+        if (in.readByte() == 0) {
+            id = null;
+        } else {
+            id = in.readLong();
+        }
+        mInputType = in.readString();
+        mActivityType = in.readString();
+        mDateTime = in.readString();
+        mDuration = in.readString();
+        mDistance = in.readString();
+        mAvgPace = in.readString();
+        mAvgSpeed = in.readString();
+        mCalorie = in.readString();
+        mClimb = in.readString();
+        mHeartRate = in.readString();
+        mComment = in.readString();
+        mTime = in.readString();
+        mDate = in.readString();
+        mPrivacy = in.readString();
+        mGPS = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        if (id == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeLong(id);
+        }
+        dest.writeString(mInputType);
+        dest.writeString(mActivityType);
+        dest.writeString(mDateTime);
+        dest.writeString(mDuration);
+        dest.writeString(mDistance);
+        dest.writeString(mAvgPace);
+        dest.writeString(mAvgSpeed);
+        dest.writeString(mCalorie);
+        dest.writeString(mClimb);
+        dest.writeString(mHeartRate);
+        dest.writeString(mComment);
+        dest.writeString(mTime);
+        dest.writeString(mDate);
+        dest.writeString(mPrivacy);
+        dest.writeString(mGPS);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<ExerciseEntry> CREATOR = new Creator<ExerciseEntry>() {
+        @Override
+        public ExerciseEntry createFromParcel(Parcel in) {
+            return new ExerciseEntry(in);
+        }
+
+        @Override
+        public ExerciseEntry[] newArray(int size) {
+            return new ExerciseEntry[size];
+        }
+    };
 
     public Long getId() {
         return id;
