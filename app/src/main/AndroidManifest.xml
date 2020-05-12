@@ -15,27 +15,35 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <service
+            android:name=".services.ActivityIntentService"
+            android:exported="false"></service>
+        <service
+            android:name=".services.LocationIntentService"
+            android:exported="false" />
 
-        <activity android:name="com.example.sunshine.myruns4.Settings" />
-        <activity android:name="com.example.sunshine.myruns4.MapActivity"
-            android:uiOptions="splitActionBarWhenNarrow"
-            />
-        <activity android:name="com.example.sunshine.myruns4.ManualEntryActivity"
-            android:configChanges="orientation|screenSize"
-            android:launchMode="singleInstance"/>
+        <activity android:name=".Settings" />
         <activity
-            android:name="com.example.sunshine.myruns4.MainActivity"
+            android:name=".MapActivity"
+           />
+        <activity
+            android:name=".ManualEntryActivity"
+            android:configChanges="orientation|screenSize"
+            android:launchMode="singleInstance" />
+        <activity
+            android:name=".MainActivity"
             android:label="MainActivity"
             android:launchMode="singleInstance" />
         <activity android:name="com.soundcloud.android.crop.CropImageActivity" />
         <activity
-            android:name="com.example.sunshine.myruns4.RegisterActivity"
+            android:name=".RegisterActivity"
             android:label="Sign Up" />
         <activity
-            android:name="com.example.sunshine.myruns4.LoginActivity"
+            android:name=".LoginActivity"
             android:label="myruns4">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -49,9 +57,11 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_path" />
         </provider>
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value= "@string/google_maps_key"/>
+            android:value="@string/google_maps_key" />
+
         <service android:name=".services.TrackingService" />
     </application>
 

@@ -24,6 +24,7 @@ import com.example.sunshine.myruns4.database.ExerciseInsertTask;
 import com.example.sunshine.myruns4.fragments.HistoryFragment;
 import com.example.sunshine.myruns4.fragments.StartFragment;
 import com.example.sunshine.myruns4.models.ExerciseEntry;
+import com.example.sunshine.myruns4.services.LocationIntentService;
 import com.example.sunshine.myruns4.services.TrackingService;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -71,10 +72,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void registerBroadcastReceivers() {
         LocalBroadcastManager.getInstance(this).registerReceiver(mLocationBroadcastReceiver,
-                new IntentFilter(TrackingService.BROADCAST_LOCATION));
+                new IntentFilter(LocationIntentService.BROADCAST_LOCATION));
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mActivityDetectionBroadcastReceiver,
-                new IntentFilter(TrackingService.BROADCAST_ACTIVITY));
+                new IntentFilter(LocationIntentService.BROADCAST_ACTIVITY));
     }
 
     private void setUpActionBar() {
@@ -120,10 +121,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     /*
      * Begins Tracking Service which handles different threads for Activity Recognition
-     * and Location Tracking
+     * and Location Tracking. We pass in as the intent the activity type and the input type
      */
     private void startTrackingService() {
+        String activityType = getIntent().getStringExtra("Activity");
+        String inputType = getIntent().getStringExtra("InputType");
+
         serviceIntent = new Intent(this, TrackingService.class);
+        serviceIntent.putExtra("InputType", inputType);
+        serviceIntent.putExtra("Activity", activityType);
+
         startForegroundService(serviceIntent);
     }
 
@@ -133,10 +140,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      BroadcastReceiver mLocationBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(TrackingService.BROADCAST_LOCATION)) {
+            if (intent.getAction().equals(LocationIntentService.BROADCAST_LOCATION)) {
                 Log.d(TrackingService.TAG, "MapActivity: onReceive(): Thread ID is:" + Thread.currentThread().getId());
                 Location location = intent.getParcelableExtra("location");
                 LatLng iAmHere = new LatLng(location.getLatitude(), location.getLongitude());
+                mMaker.remove();
                 mMaker = mMap.addMarker(new MarkerOptions().position(iAmHere).title("I am home"));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(iAmHere, 17));
             }
@@ -149,7 +157,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private BroadcastReceiver mActivityDetectionBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(TrackingService.BROADCAST_ACTIVITY)) {
+            if (intent.getAction().equals(LocationIntentService.BROADCAST_ACTIVITY)) {
                 Log.d(TrackingService.TAG, "MapActivity: onReceive(): Thread ID is:" + Thread.currentThread().getId());
             }
         }

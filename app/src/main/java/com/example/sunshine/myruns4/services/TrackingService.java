@@ -8,45 +8,32 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
-import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.example.sunshine.myruns4.MapActivity;
 import com.example.sunshine.myruns4.R;
 import com.example.sunshine.myruns4.models.ExerciseEntry;
-import com.google.android.gms.location.LocationAvailability;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
 
-import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
 
 public class TrackingService extends Service {
     public static final String TAG = TrackingService.class.getName();
-    public static final String BROADCAST_ACTIVITY = "BroadCast Activity";
-    private static final long UPDATE_INTERVAL = 5000;
-    private static final long FAST_INTERVAL = 1000;
     private static final int SERVICE_NOTIFICATION_ID = 1;
-    public static final String BROADCAST_LOCATION = "BroadCast Location";
     private NotificationManager notificationManger;
     private ExerciseEntry mExerciseEntry;
 
 
     public TrackingService() {
-        Log.d(TAG, "TrackingService: Thread ID is:" + Thread.currentThread().getId());
+        Log.d(TAG, "TrackingService constructor: Thread ID is:" + Thread.currentThread().getId());
     }
+
 
     @Override
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "TrackingService: onCreate(): Thread ID is:" + Thread.currentThread().getId());
         initExerciseEntry();
-        startLocationUpdates(); // TODO: May have to initialise an Intent Service class
-        startActivityUpdates();
-
     }
 
     /*
@@ -57,29 +44,31 @@ public class TrackingService extends Service {
     }
 
 
-    private void startActivityUpdates() {
-        // TODO: May have to initialise an Intent Service class
-    }
-
-    private void startLocationUpdates() {
-        // set criteria
-        LocationRequest locationRequest = new LocationRequest();
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setInterval(UPDATE_INTERVAL);
-        locationRequest.setFastestInterval(FAST_INTERVAL);
-
-        // check if the system can support the criteria
-        getFusedLocationProviderClient(this).requestLocationUpdates(locationRequest, mLocationCallback, Looper.myLooper());
-        Log.d(TAG, "onStartLocationUpdates(): Thread ID is:" + Thread.currentThread().getId());
-
-    }
-
-
+    /*
+     * Called from the Map Activity when Tracking Service is requested
+     * We first notify the user of location tracking
+     * Next, depending on the Activity Type and Input Type we call the appropriate
+     * IntentServices to handle heavy lifting processes
+     */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
         Log.d(TAG, "onStartCommand(): Thread ID is:" + Thread.currentThread().getId());
-        createNotification();
+
+        if (intent != null) {
+            createNotification();
+            String activityType = intent.getStringExtra("Activity");
+            String inputType = intent.getStringExtra("InputType");
+
+            if (activityType != null && inputType.equals("Automatic")) {
+                LocationIntentService.startLocationTracking(TrackingService.this, mExerciseEntry);
+            } else if (activityType != null && inputType.equals("GPS")) {
+                LocationIntentService.startLocationTracking(TrackingService.this, mExerciseEntry);
+                ActivityIntentService.startActivityRecognition(TrackingService.this, mExerciseEntry);
+            }
+        }
+
+
         return START_STICKY;
     }
 
@@ -92,7 +81,7 @@ public class TrackingService extends Service {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
         // Create notification and its channel
-        notificationManger = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManger = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         String channelId = "tracking";
         String channelName = "MyRuns";
@@ -110,24 +99,6 @@ public class TrackingService extends Service {
         startForeground(SERVICE_NOTIFICATION_ID, notification);
     }
 
-    private LocationCallback mLocationCallback = new LocationCallback()  {
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            super.onLocationResult(locationResult);
-            Log.d(TAG, " onLocationResult(): Thread ID is:" + Thread.currentThread().getId());
-            Intent intent = new Intent(BROADCAST_LOCATION);
-            intent.putExtra("location", locationResult.getLastLocation());
-            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
-        }
-
-        @Override
-        public void onLocationAvailability(LocationAvailability locationAvailability) {
-            super.onLocationAvailability(locationAvailability);
-            Log.d(TAG, "onLocationAvailability(): Thread ID is:" + Thread.currentThread().getId());
-        }
-    };
-    
-
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -140,4 +111,5 @@ public class TrackingService extends Service {
         Log.d(TAG, "onBind: Thread ID is:" + Thread.currentThread().getId());
         return null;
     }
+
 }
