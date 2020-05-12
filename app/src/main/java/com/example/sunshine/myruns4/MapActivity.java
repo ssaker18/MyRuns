@@ -214,8 +214,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 //                ExerciseInsertTask task = new ExerciseInsertTask(this, mDataSource);
 //                task.execute(newEntry);
                 Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
-                finish();
+                closeAllServices();
                 startActivity(new Intent(MapActivity.this, MainActivity.class));
+                finish();
                 return true;
             case R.id.delete_activity_entry:
                 // calls the delete method on the database helper
@@ -233,6 +234,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 ////                    Log.d(TAG, "Invalid Exercise ID");
 ////                }
                 Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
+                closeAllServices();
+                startActivity(new Intent(MapActivity.this, MainActivity.class));
+                finish();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
