@@ -15,11 +15,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity
-            android:name="com.example.sunshine.myruns4.MapFragmentActivity"
-            android:label="@string/map" />
+
         <activity android:name="com.example.sunshine.myruns4.Settings" />
-        <activity android:name="com.example.sunshine.myruns4.MapActivity" />
+        <activity android:name="com.example.sunshine.myruns4.MapActivity"
+            android:uiOptions="splitActionBarWhenNarrow"
+            />
         <activity android:name="com.example.sunshine.myruns4.ManualEntryActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="singleInstance"/>
@@ -51,7 +51,8 @@
         </provider>
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value= "@string/google_maps_key" />
+            android:value= "@string/google_maps_key"/>
+        <service android:name=".services.TrackingService" />
     </application>
 
 </manifest>
