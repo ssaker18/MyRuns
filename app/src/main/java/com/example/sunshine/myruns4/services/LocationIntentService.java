@@ -18,12 +18,14 @@ import static com.google.android.gms.location.LocationServices.getFusedLocationP
 
 
 public class LocationIntentService extends IntentService {
-    private static final long UPDATE_INTERVAL = 5000;
+    private static final long UPDATE_INTERVAL = 10000;
     private static final long FAST_INTERVAL = 1000;
 
     private static final String LOCATION_TRACKING = "Location Tracking";
     public static final String BROADCAST_LOCATION = "BroadCast Location";
     public static final String BROADCAST_ACTIVITY = "BroadCast Activity";
+
+    private LocationCallback mLocationCallback;
 
 
     private static final String TAG = LocationIntentService.class.getName();
@@ -32,10 +34,11 @@ public class LocationIntentService extends IntentService {
         super("LocationIntentService");
     }
 
-
     @Override
     public void onCreate() {
         super.onCreate();
+        initLocationCallback();
+        startLocationUpdates();
     }
 
     /*
@@ -87,21 +90,25 @@ public class LocationIntentService extends IntentService {
 
     }
 
-    private LocationCallback mLocationCallback = new LocationCallback()  {
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            super.onLocationResult(locationResult);
-            Log.d(TAG, " onLocationResult(): Thread ID is:" + Thread.currentThread().getId());
-            Log.d(TAG, " onLocationResult(): Location is:" + locationResult.toString());
-            Intent intent = new Intent(BROADCAST_LOCATION);
-            intent.putExtra("location", locationResult.getLastLocation());
-            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
-        }
 
-        @Override
-        public void onLocationAvailability(LocationAvailability locationAvailability) {
-            super.onLocationAvailability(locationAvailability);
-            Log.d(TAG, "onLocationAvailability(): Thread ID is:" + Thread.currentThread().getId());
-        }
-    };
+    private void initLocationCallback(){
+         mLocationCallback = new LocationCallback()  {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                super.onLocationResult(locationResult);
+                Log.d(TAG, " onLocationResult(): Thread ID is:" + Thread.currentThread().getId());
+                Log.d(TAG, " onLocationResult(): Location is:" + locationResult.toString());
+                Intent intent = new Intent(BROADCAST_LOCATION);
+                intent.putExtra("location", locationResult.getLastLocation());
+                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+            }
+
+            @Override
+            public void onLocationAvailability(LocationAvailability locationAvailability) {
+                super.onLocationAvailability(locationAvailability);
+                Log.d(TAG, "onLocationAvailability(): Thread ID is:" + Thread.currentThread().getId());
+            }
+        };
+    }
+
 }

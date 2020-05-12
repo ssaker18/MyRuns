@@ -25,7 +25,7 @@ public class TrackingService extends Service {
 
 
     public TrackingService() {
-        Log.d(TAG, "TrackingService constructor: Thread ID is:" + Thread.currentThread().getId());
+        Log.d(TAG, "TrackingService constructor(): Thread ID is:" + Thread.currentThread().getId());
     }
 
 
@@ -67,8 +67,6 @@ public class TrackingService extends Service {
                 ActivityIntentService.startActivityRecognition(TrackingService.this, mExerciseEntry);
             }
         }
-
-
         return START_STICKY;
     }
 

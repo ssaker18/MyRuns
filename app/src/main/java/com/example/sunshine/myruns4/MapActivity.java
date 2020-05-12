@@ -144,9 +144,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 Log.d(TrackingService.TAG, "MapActivity: onReceive(): Thread ID is:" + Thread.currentThread().getId());
                 Location location = intent.getParcelableExtra("location");
                 LatLng iAmHere = new LatLng(location.getLatitude(), location.getLongitude());
-                mMaker.remove();
                 mMaker = mMap.addMarker(new MarkerOptions().position(iAmHere).title("I am home"));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(iAmHere, 17));
+                Toast.makeText(MapActivity.this, "Location Received", Toast.LENGTH_SHORT).show();
             }
         }
     };
@@ -154,7 +154,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     /*
      * Creates a BroadCast Receiver for an ActivityDetection BroadCast
      */
-    private BroadcastReceiver mActivityDetectionBroadcastReceiver = new BroadcastReceiver() {
+    BroadcastReceiver mActivityDetectionBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(LocationIntentService.BROADCAST_ACTIVITY)) {
