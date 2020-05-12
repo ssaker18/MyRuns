@@ -24,6 +24,7 @@ import com.example.sunshine.myruns4.database.ExerciseInsertTask;
 import com.example.sunshine.myruns4.fragments.HistoryFragment;
 import com.example.sunshine.myruns4.fragments.StartFragment;
 import com.example.sunshine.myruns4.models.ExerciseEntry;
+import com.example.sunshine.myruns4.services.ActivityIntentService;
 import com.example.sunshine.myruns4.services.LocationIntentService;
 import com.example.sunshine.myruns4.services.TrackingService;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -56,9 +57,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         // set up map fragment view and obtain the SupportMapFragment
         // get notified when the map is ready to be used.
-       setUpMapFragment();
+        setUpMapFragment();
 
-       // initialise reference to database
+        // initialise reference to database
         mDataSource = new ExerciseDataSource(this);
         mDataSource.open();
 
@@ -104,7 +105,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (!checkPermission()) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     PERMISSION_REQUEST_CODE);
-        }else {
+        } else {
             startTrackingService();
         }
     }
@@ -137,7 +138,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     /*
      * Creates a BroadCast Receiver for an ActivityDetection BroadCast
      */
-     BroadcastReceiver mLocationBroadcastReceiver = new BroadcastReceiver() {
+    BroadcastReceiver mLocationBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(LocationIntentService.BROADCAST_LOCATION)) {
@@ -164,7 +165,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     };
 
     //******** Check run time permission for locationManager. This is for v23+  ********
-    private boolean checkPermission(){
+    private boolean checkPermission() {
         int result = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         if (result == PackageManager.PERMISSION_GRANTED)
             return true;
@@ -183,13 +184,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         Intent entryPoint = getIntent();
 
         if (entryPoint != null) {
-            switch (entryPoint.getStringExtra(SOURCE)) {
-                case StartFragment.FRAGMENT_NAME:
-                    getMenuInflater().inflate(R.menu.save_activity, menu);
-                    break;
-                case HistoryFragment.FRAGMENT_NAME:
-                    getMenuInflater().inflate(R.menu.delete_activity, menu);
-                    break;
+            String sourceName = entryPoint.getStringExtra(SOURCE);
+            if (sourceName != null && sourceName.equals(StartFragment.FRAGMENT_NAME)) {
+                getMenuInflater().inflate(R.menu.save_activity, menu);
+            } else if (sourceName != null && entryPoint.getStringExtra(SOURCE).equals(HistoryFragment.FRAGMENT_NAME)) {
+                getMenuInflater().inflate(R.menu.delete_activity, menu);
             }
         }
         return super.onCreateOptionsMenu(menu);
@@ -206,6 +205,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             case android.R.id.home:
                 Log.d(TAG, "home button");
                 startActivity(new Intent(MapActivity.this, MainActivity.class));
+                closeAllServices();
                 finish();
                 return true;
             case R.id.save_activity_entry:
@@ -240,10 +240,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     /*
+     * Helper method to stop all services
+     */
+    private void closeAllServices() {
+        stopService(new Intent(this, TrackingService.class));
+        stopService(new Intent(this, LocationIntentService.class));
+        stopService(new Intent(this, ActivityIntentService.class));
+    }
+
+    /*
      * Closes database when activity is being destroyed
+     * Unregisters the Location callback listener
      */
     @Override
     protected void onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mLocationBroadcastReceiver);
         mDataSource.close();
         super.onDestroy();
     }

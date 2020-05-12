@@ -34,6 +34,7 @@ public class TrackingService extends Service {
         super.onCreate();
         Log.d(TAG, "TrackingService: onCreate(): Thread ID is:" + Thread.currentThread().getId());
         initExerciseEntry();
+        createNotification();
     }
 
     /*
@@ -56,7 +57,6 @@ public class TrackingService extends Service {
         Log.d(TAG, "onStartCommand(): Thread ID is:" + Thread.currentThread().getId());
 
         if (intent != null) {
-            createNotification();
             String activityType = intent.getStringExtra("Activity");
             String inputType = intent.getStringExtra("InputType");
 
