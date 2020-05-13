@@ -83,9 +83,6 @@ public class MapActivity extends AppCompatActivity
         // Initialise DeleteTask
         mDeleteTask = new DeleteExerciseTask(this);
 
-        // Register Broadcast Receivers for Location Tracking and Activity Recognition
-        registerBroadcastReceivers();
-
         // Figure out calling Activity
         Intent entry = getIntent();
         if (entry != null) {
@@ -98,6 +95,8 @@ public class MapActivity extends AppCompatActivity
                         mLoader.initLoader(MyConstants.FETCH_SINGLE_EXERCISE_ID, null, this).forceLoad();
                         break;
                     case StartFragment.FRAGMENT_NAME:
+                        // Register Broadcast Receivers for Location Tracking and Activity Recognition
+                        registerBroadcastReceivers();
                         startTrackingService();
                         break;
                 }
