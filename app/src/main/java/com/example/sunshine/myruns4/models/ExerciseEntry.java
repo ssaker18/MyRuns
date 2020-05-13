@@ -17,7 +17,7 @@ public class ExerciseEntry implements Parcelable {
     private String mDistance;      // Distance traveled. Either in meters or feet.
     private String mAvgPace;       // Average pace
     private String mAvgSpeed;      // Average speed
-    private String mCalorie ;          // Calories burnt
+    private String mCalorie;          // Calories burnt
     private String mClimb;         // Climb. Either in meters or feet.
     private String mHeartRate;        // Heart rate
     private String mComment;       // Comments
@@ -220,23 +220,24 @@ public class ExerciseEntry implements Parcelable {
         return this.mLocationList;
     }
 
-    public void setPrivacy(String newPrivacy){
+    public void setPrivacy(String newPrivacy) {
         this.mPrivacy = newPrivacy;
     }
 
-    public void setLocationList(ArrayList<LatLng> newLocationList){
+    public void setLocationList(ArrayList<LatLng> newLocationList) {
         this.mLocationList = newLocationList;
     }
 
     public String getDate() {
         return this.mDateTime.substring(0, mDateTime.indexOf(" "));
     }
+
     public String getTime() {
         String time = this.mDateTime.substring(
                 mDateTime.indexOf(" ") + 1);
 
         // May have to strip off seconds component
-        if (time.length() > 5){
+        if (time.length() > 5) {
             time.substring(0, time.length() - 3);
         }
         return time;

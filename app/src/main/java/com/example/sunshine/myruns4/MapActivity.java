@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.example.sunshine.myruns4.constants.MyConstants;
+import com.example.sunshine.myruns4.database.DeleteExerciseTask;
 import com.example.sunshine.myruns4.database.ExerciseDataSource;
 import com.example.sunshine.myruns4.database.ExerciseInsertTask;
 import com.example.sunshine.myruns4.fragments.HistoryFragment;
@@ -58,7 +59,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private Intent serviceIntent;
     private ExerciseDataSource mDataSource;
     private Marker mFirstMarker, mLastMarker;
-    private ManualEntryActivity.DeleteExerciseTask mDeleteTask;
+    private DeleteExerciseTask mDeleteTask;
     private ExerciseEntry mExerciseEntry;
 
 
@@ -79,7 +80,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mDataSource.open();
 
         // Initialise DeleteTask TODO: Refractor DeleteExerciseTask to it's own class
-//         mDeleteTask = new ManualEntryActivity.DeleteExerciseTask();
+        mDeleteTask = new DeleteExerciseTask(this);
 
         // Register Broadcast Receivers for Location Tracking and Activity Recognition
         registerBroadcastReceivers();
@@ -191,7 +192,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      * Helper to render start and end Markers on PolyLine
      */
     private void setStartEndMarkers(ExerciseEntry exerciseEntry) {
-        if (exerciseEntry != null){
+        if (exerciseEntry != null) {
             ArrayList<LatLng> locationList = exerciseEntry.getLocationList();
             if (locationList != null) {
                 LatLng firstPosition = locationList.get(0);
@@ -203,9 +204,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
 
                 // Remove old Last location if new Last location is obtained
-                if (mLastMarker != null){
+                if (mLastMarker != null) {
                     mLastMarker.setPosition(lastPosition);
-                }else{
+                } else {
                     mLastMarker = mMap.addMarker(new MarkerOptions().position(lastPosition).icon(BitmapDescriptorFactory.defaultMarker(
                             BitmapDescriptorFactory.HUE_GREEN)).title("Recent Position"));
                 }
@@ -289,19 +290,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 return true;
             case R.id.delete_activity_entry:
                 // calls the delete method on the database helper
-//                Intent intent = getIntent();
-////                if (intent != null) {
-////                    Long id = intent.getLongExtra(EXERCISE_ENTRY_ID, -1);
-////                    if (id > -1) {
-////                        mDeleteTask.execute(id);
-////                        startActivity(new Intent(MapActivity.this, MainActivity.class));
-////                    } else {
-////                        Log.d(TAG, "Invalid Exercise ID - Non-null index");
-////                        Toast.makeText(this, "Invalid Exercise ID", Toast.LENGTH_SHORT).show();
-////                    }
-////                } else {
-////                    Log.d(TAG, "Invalid Exercise ID");
-////                }
+                Intent intent = getIntent();
+                if (intent != null) {
+                    Long id = intent.getLongExtra(MyConstants.EXERCISE_ENTRY_ID, -1);
+                    if (id > -1) {
+                        mDeleteTask.execute(id);
+                        startActivity(new Intent(MapActivity.this, MainActivity.class));
+                    } else {
+                        Log.d(TAG, "Invalid Exercise ID - Non-null index");
+                        Toast.makeText(this, "Invalid Exercise ID", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Log.d(TAG, "Invalid Exercise ID");
+                }
                 Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
                 closeAllServices();
                 startActivity(new Intent(MapActivity.this, MainActivity.class));
@@ -313,19 +314,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void captureDuration() {
-        if (mExerciseEntry != null ){
+        if (mExerciseEntry != null) {
 
             LocalTime startTime = LocalTime.parse(mExerciseEntry.getTime());
             LocalTime now = LocalTime.now();
 
-            long secs =  now.getSecond() - startTime.getSecond();
+            long secs = now.getSecond() - startTime.getSecond();
             long hours = now.getHour() - startTime.getHour();
             long mins = now.getMinute() - startTime.getMinute();
 
             // convert everything else to mins
-            mins = mins + hours * 60 + (secs * (1/60));
+            mins = mins + hours * 60 + (secs * (1 / 60));
 
-            String duration  = mins + " mins";
+            String duration = mins + " mins";
             Log.d(TAG, "captureDuration() " + duration);
             mExerciseEntry.setDuration(duration);
         }

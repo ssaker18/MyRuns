@@ -70,7 +70,7 @@ public class LocationIntentService extends IntentService {
                 ExerciseEntry exerciseEntry = intent.getParcelableExtra(MyConstants.CURRENT_EXERCISE); // grab from intent
                 handleLocationTracking(exerciseEntry);
                 Log.d(TAG, "onHandleIntent(): starting Tracking");
-            }else{
+            } else {
                 Log.d(TAG, "onHandleIntent(): Unknown intent action");
             }
         }
@@ -105,8 +105,8 @@ public class LocationIntentService extends IntentService {
      * Sets up CallBack for location Requests. OnLocationResult we add the new location
      * to the exercise entry's location list and send broadcast
      */
-    private void initLocationCallback(){
-        mLocationCallback = new LocationCallback()  {
+    private void initLocationCallback() {
+        mLocationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
@@ -137,12 +137,12 @@ public class LocationIntentService extends IntentService {
         LatLng newLatLng = new LatLng(latitude, longitude);
 
         ArrayList<LatLng> newLocationList;
-        if (oldLocationList == null){
+        if (oldLocationList == null) {
             // very first location received
             newLocationList = new ArrayList<>();
             newLocationList.add(newLatLng);
             mCurrExercise.setLocationList(newLocationList);
-        }else{
+        } else {
             // multiple locations obtained add on to the end
             newLocationList = oldLocationList;
             newLocationList.add(newLatLng);

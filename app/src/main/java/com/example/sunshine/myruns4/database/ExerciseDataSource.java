@@ -18,22 +18,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ExerciseDataSource {
-    private static final String TAG =  ExerciseDataSource.class.getName();
+    private static final String TAG = ExerciseDataSource.class.getName();
 
     // Database fields
     private SQLiteDatabase db;
     private ExerciseEntryDbHelper dbHelper;
     private String[] allColumns = {
             ExerciseEntryDbHelper.COLUMN_ID, ExerciseEntryDbHelper.COLUMN_DATA_TIME,
-            ExerciseEntryDbHelper.COLUMN_COMMENT,  ExerciseEntryDbHelper.COLUMN_DISTANCE,
+            ExerciseEntryDbHelper.COLUMN_COMMENT, ExerciseEntryDbHelper.COLUMN_DISTANCE,
             ExerciseEntryDbHelper.COLUMN_AVG_PACE, ExerciseEntryDbHelper.COLUMN_DURATION,
             ExerciseEntryDbHelper.COLUMN_AVG_SPEED, ExerciseEntryDbHelper.COLUMN_CLIMB,
             ExerciseEntryDbHelper.COLUMN_HEARTRATE, ExerciseEntryDbHelper.COLUMN_CALORIES,
             ExerciseEntryDbHelper.COLUMN_PRIVACY, ExerciseEntryDbHelper.COLUMN_GPS_DATA,
             ExerciseEntryDbHelper.COLUMN_ACTIVITY_TYPE, ExerciseEntryDbHelper.COLUMN_INPUT_TYPE,
-             };
+    };
 
-    public ExerciseDataSource(Context context){
+    public ExerciseDataSource(Context context) {
         dbHelper = new ExerciseEntryDbHelper(context);
     }
 
@@ -77,9 +77,9 @@ public class ExerciseDataSource {
                 allColumns, ExerciseEntryDbHelper.COLUMN_ID + " = " + rowId + ";",
                 null, null, null, null);
         cursor.moveToFirst();
-        ExerciseEntry fetchedEntry =  exerciseFromCursor(cursor);
+        ExerciseEntry fetchedEntry = exerciseFromCursor(cursor);
         cursor.close();
-        return  fetchedEntry;
+        return fetchedEntry;
     }
 
     /*
@@ -114,18 +114,18 @@ public class ExerciseDataSource {
         }
 
         int INDEX_ID = cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_ID);
-        int INDEX_ACTIVITY_TYPE =  cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_ACTIVITY_TYPE);
-        int INDEX_INPUT_TYPE =  cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_INPUT_TYPE);
-        int INDEX_DATA_TIME =  cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_DATA_TIME);
-        int INDEX_DISTANCE =  cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_DISTANCE);
-        int INDEX_DURATION =  cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_DURATION);
-        int INDEX_HEARTRATE =  cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_HEARTRATE);
-        int INDEX_COMMENT =  cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_COMMENT);
-        int INDEX_AVG_PACE =  cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_AVG_PACE);
-        int INDEX_AVG_SPEED =  cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_AVG_SPEED);
-        int INDEX_CALORIES =  cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_CALORIES);
-        int INDEX_CLIMB =  cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_CLIMB );
-        int INDEX_GPS =  cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_GPS_DATA);
+        int INDEX_ACTIVITY_TYPE = cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_ACTIVITY_TYPE);
+        int INDEX_INPUT_TYPE = cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_INPUT_TYPE);
+        int INDEX_DATA_TIME = cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_DATA_TIME);
+        int INDEX_DISTANCE = cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_DISTANCE);
+        int INDEX_DURATION = cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_DURATION);
+        int INDEX_HEARTRATE = cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_HEARTRATE);
+        int INDEX_COMMENT = cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_COMMENT);
+        int INDEX_AVG_PACE = cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_AVG_PACE);
+        int INDEX_AVG_SPEED = cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_AVG_SPEED);
+        int INDEX_CALORIES = cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_CALORIES);
+        int INDEX_CLIMB = cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_CLIMB);
+        int INDEX_GPS = cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_GPS_DATA);
         int INDEX_PRIVACY = cursor.getColumnIndex(ExerciseEntryDbHelper.COLUMN_PRIVACY);
 
         ExerciseEntry exercise = new ExerciseEntry(cursor.getLong(INDEX_ID));
@@ -149,15 +149,14 @@ public class ExerciseDataSource {
     /*
      * Converts back JSON to an ArrayList of LatLngs
      */
-    private ArrayList<LatLng> JsonToLocations(String string){
+    private ArrayList<LatLng> JsonToLocations(String string) {
 
         Log.d(TAG, "JsonToLocations() received " + string);
         JSONArray jsonArray = null;
         ArrayList<LatLng> locations = new ArrayList<>();
         try {
             jsonArray = new JSONArray(string);
-            for (int i = 0; i < jsonArray.length(); i++)
-            {
+            for (int i = 0; i < jsonArray.length(); i++) {
                 // TODO: create new LatLng each time
                 JSONObject jsonObj = jsonArray.getJSONObject(i);
                 System.out.println(jsonObj);
@@ -192,7 +191,7 @@ public class ExerciseDataSource {
      * Converts a location ArrayList to JSON in order to simplify
      * insertion into the database
      */
-    private String locationListToJSON(ArrayList<LatLng> locationList){
+    private String locationListToJSON(ArrayList<LatLng> locationList) {
         List<LatLng> list = locationList;
         JSONArray jsArray = new JSONArray(list);
 //        for (int i = 0; i < locationList.size(); i++) {

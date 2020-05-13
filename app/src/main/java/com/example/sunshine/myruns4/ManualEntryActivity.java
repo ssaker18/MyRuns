@@ -28,6 +28,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.sunshine.myruns4.adapters.ManualEntryAdapter;
+import com.example.sunshine.myruns4.constants.MyConstants;
+import com.example.sunshine.myruns4.database.DeleteExerciseTask;
 import com.example.sunshine.myruns4.database.ExerciseDataSource;
 import com.example.sunshine.myruns4.database.ExerciseInsertTask;
 import com.example.sunshine.myruns4.database.ExerciseListLoader;
@@ -81,7 +83,7 @@ public class ManualEntryActivity extends AppCompatActivity
         setUpActionbar();
 
         // Initialise DeleteTask
-        mDeleteTask = new DeleteExerciseTask();
+        mDeleteTask = new DeleteExerciseTask(this);
 
         // Grab ListView by Id
         ListView mListView = findViewById(R.id.list_view);
@@ -338,7 +340,7 @@ public class ManualEntryActivity extends AppCompatActivity
 
             String distance = entry.getDistance();
             if (mDistanceUnitPrefs.equals(IMPERIAL_MILES)) {
-                if (distance.contains("kms")){
+                if (distance.contains("kms")) {
                     distance = distance.replace(" kms", "");
                     DecimalFormat df = new DecimalFormat("####0.00");
 
@@ -346,7 +348,7 @@ public class ManualEntryActivity extends AppCompatActivity
                     distance = distance + " miles";
                     entry.setDistance(distance);
                 }
-            }else{
+            } else {
                 if (distance.contains("miles")) {
                     distance = distance.replace(" miles", "");
                     DecimalFormat df = new DecimalFormat("####0.00");
@@ -481,7 +483,7 @@ public class ManualEntryActivity extends AppCompatActivity
         if (id == FETCH_SINGLE_EXERCISE_ID) {
             Intent intent = getIntent();
             if (intent != null) {
-                Long exerciseID = intent.getLongExtra(EXERCISE_ENTRY_ID, -1);
+                Long exerciseID = intent.getLongExtra(MyConstants.EXERCISE_ENTRY_ID, -1);
                 if (exerciseID > -1) {
                     return new ExerciseListLoader(ManualEntryActivity.this, exerciseID);
                 } else {
@@ -522,38 +524,5 @@ public class ManualEntryActivity extends AppCompatActivity
 
     @Override
     public void onLoaderReset(@NonNull Loader<ArrayList<ExerciseEntry>> loader) {
-    }
-
-    /*
-     * AsyncTask for deleting exercise from DataBase
-     * Calls deleteEntryByIndex() method in background
-     */
-    protected class DeleteExerciseTask extends AsyncTask<Long, Void, Void> {
-        private static final String TAG = "DeleteExerciseTask";
-
-        @Override
-        protected Void doInBackground(Long... id) {
-            if (isCancelled()) {
-                return null;
-            }
-            mDataSource.deleteEntryByIndex(id);
-
-            Log.d(TAG, "doInBackground: still deleting");
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(Void... unused) {
-            if (isCancelled()) {
-                Log.d(TAG, "onProgressUpdate: deleting in progress");
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Void unused) {
-            // Return to Main Activity on the history fragment
-            (ManualEntryActivity.this).finish();
-            Log.d(TAG, "onPostExecute: deleted exercise");
-        }
     }
 }
