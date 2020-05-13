@@ -28,6 +28,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.sunshine.myruns4.adapters.ManualEntryAdapter;
+import com.example.sunshine.myruns4.constants.MyConstants;
+import com.example.sunshine.myruns4.database.DeleteExerciseTask;
 import com.example.sunshine.myruns4.database.ExerciseDataSource;
 import com.example.sunshine.myruns4.database.ExerciseInsertTask;
 import com.example.sunshine.myruns4.database.ExerciseListLoader;
@@ -81,7 +83,7 @@ public class ManualEntryActivity extends AppCompatActivity
         setUpActionbar();
 
         // Initialise DeleteTask
-        mDeleteTask = new DeleteExerciseTask();
+        mDeleteTask = new DeleteExerciseTask(this);
 
         // Grab ListView by Id
         ListView mListView = findViewById(R.id.list_view);
@@ -317,7 +319,7 @@ public class ManualEntryActivity extends AppCompatActivity
 
         if (entry == null) {
             mItems.add(new ManualEntryModel("Activity",
-                    getIntent().getStringExtra("Activity")));
+                    getIntent().getStringExtra(MyConstants.ACTIVITY_TYPE)));
             mItems.add(new ManualEntryModel("Date",
                     java.time.LocalDate.now().toString()));
             mItems.add(new ManualEntryModel("Time",
@@ -338,7 +340,7 @@ public class ManualEntryActivity extends AppCompatActivity
 
             String distance = entry.getDistance();
             if (mDistanceUnitPrefs.equals(IMPERIAL_MILES)) {
-                if (distance.contains("kms")){
+                if (distance.contains("kms")) {
                     distance = distance.replace(" kms", "");
                     DecimalFormat df = new DecimalFormat("####0.00");
 
@@ -346,7 +348,7 @@ public class ManualEntryActivity extends AppCompatActivity
                     distance = distance + " miles";
                     entry.setDistance(distance);
                 }
-            }else{
+            } else {
                 if (distance.contains("miles")) {
                     distance = distance.replace(" miles", "");
                     DecimalFormat df = new DecimalFormat("####0.00");
@@ -478,10 +480,10 @@ public class ManualEntryActivity extends AppCompatActivity
     @NonNull
     @Override
     public Loader<ArrayList<ExerciseEntry>> onCreateLoader(int id, @Nullable Bundle args) {
-        if (id == FETCH_SINGLE_EXERCISE_ID) {
+        if (id == MyConstants.FETCH_SINGLE_EXERCISE_ID) {
             Intent intent = getIntent();
             if (intent != null) {
-                Long exerciseID = intent.getLongExtra(EXERCISE_ENTRY_ID, -1);
+                Long exerciseID = intent.getLongExtra(MyConstants.EXERCISE_ENTRY_ID, -1);
                 if (exerciseID > -1) {
                     return new ExerciseListLoader(ManualEntryActivity.this, exerciseID);
                 } else {
@@ -493,6 +495,24 @@ public class ManualEntryActivity extends AppCompatActivity
         return null;
     }
 
+    /*
+     * Called when AsyncTaskLoader for Fetching Single Entry is finished
+     * We update the adapter with contents of the fetched Entry
+     */
+    @Override
+    public void onLoadFinished(@NonNull Loader<ArrayList<ExerciseEntry>> loader, ArrayList<ExerciseEntry> data) {
+        Log.d(TAG, "onLoadFinished(): Thread ID " + Thread.currentThread().getId());
+        if (loader.getId() == MyConstants.FETCH_SINGLE_EXERCISE_ID) {
+            if (data.size() > 0) {
+                fillUpAdapterArray(data.get(0));
+                mManualEntryAdapter.notifyDataSetChanged();
+            }
+        }
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<ArrayList<ExerciseEntry>> loader) {
+    }
 
     /*
      * Called when user hits back button
@@ -502,58 +522,5 @@ public class ManualEntryActivity extends AppCompatActivity
         startActivity(new Intent(ManualEntryActivity.this, MainActivity.class));
         finish();
         super.onBackPressed();
-    }
-
-    /*
-     * Called when AsyncTaskLoader for Fetching Single Entry is finished
-     * We update the adapter with contents of the fetched Entry
-     */
-    @Override
-    public void onLoadFinished(@NonNull Loader<ArrayList<ExerciseEntry>> loader, ArrayList<ExerciseEntry> data) {
-        Log.d(TAG, "onLoadFinished(): Thread ID " + Thread.currentThread().getId());
-        if (loader.getId() == FETCH_SINGLE_EXERCISE_ID) {
-            if (data.size() > 0) {
-                fillUpAdapterArray(data.get(0));
-                mManualEntryAdapter.notifyDataSetChanged();
-            }
-        }
-    }
-
-
-    @Override
-    public void onLoaderReset(@NonNull Loader<ArrayList<ExerciseEntry>> loader) {
-    }
-
-    /*
-     * AsyncTask for deleting exercise from DataBase
-     * Calls deleteEntryByIndex() method in background
-     */
-    protected class DeleteExerciseTask extends AsyncTask<Long, Void, Void> {
-        private static final String TAG = "DeleteExerciseTask";
-
-        @Override
-        protected Void doInBackground(Long... id) {
-            if (isCancelled()) {
-                return null;
-            }
-            mDataSource.deleteEntryByIndex(id);
-
-            Log.d(TAG, "doInBackground: still deleting");
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(Void... unused) {
-            if (isCancelled()) {
-                Log.d(TAG, "onProgressUpdate: deleting in progress");
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Void unused) {
-            // Return to Main Activity on the history fragment
-            (ManualEntryActivity.this).finish();
-            Log.d(TAG, "onPostExecute: deleted exercise");
-        }
     }
 }

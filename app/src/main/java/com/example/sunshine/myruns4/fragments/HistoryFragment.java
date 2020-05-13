@@ -19,8 +19,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.sunshine.myruns4.ManualEntryActivity;
+import com.example.sunshine.myruns4.MapActivity;
 import com.example.sunshine.myruns4.R;
 import com.example.sunshine.myruns4.adapters.HistoryAdapter;
+import com.example.sunshine.myruns4.constants.MyConstants;
 import com.example.sunshine.myruns4.database.ExerciseDataSource;
 import com.example.sunshine.myruns4.database.ExerciseListLoader;
 import com.example.sunshine.myruns4.models.ExerciseEntry;
@@ -38,10 +40,9 @@ public class HistoryFragment extends Fragment
         HistoryAdapter.onExerciseClickListener {
 
     public static final String FRAGMENT_NAME = "History Fragment";
-    private static final int FETCH_ALL_EXERCISES_ID = 1;
+    private static final int FETCH_ALL_EXERCISES_ID = 1; // TODO
     private static final String TAG = HistoryFragment.class.getName();
-    private static final String EXERCISE_ENTRY_ID = "id";
-    private static final String SOURCE = "Source";
+    private static final String EXERCISE_ENTRY_ID = "id"; // TODO
     private RecyclerView recyclerView;
     private ArrayList<ExerciseEntry> mExerciseHistoryData;
     private ExerciseDataSource dataSource;
@@ -119,7 +120,7 @@ public class HistoryFragment extends Fragment
         if (sharedPreferences.getString("unit_preference", "").equals(IMPERIAL_MILES)) {
             data.forEach(exerciseEntry -> {
                 String distance = exerciseEntry.getDistance();
-                if (distance.contains("kms")) {
+                if (distance != null && distance.contains("kms")) {
                     distance = distance.replace(" kms", "");
                     DecimalFormat df = new DecimalFormat("####0.00");
                     distance = df.format(Double.parseDouble(distance) / MILE_CONVERSION_RATE);
@@ -132,7 +133,7 @@ public class HistoryFragment extends Fragment
         } else {
             data.forEach(exerciseEntry -> {
                 String distance = exerciseEntry.getDistance();
-                if (distance.contains(" miles")) {
+                if (distance != null && distance.contains(" miles")) {
                     distance = distance.replace(" miles", "");
                     DecimalFormat df = new DecimalFormat("####0.00");
                     distance = df.format((Double.parseDouble(distance) * MILE_CONVERSION_RATE));
@@ -186,15 +187,29 @@ public class HistoryFragment extends Fragment
     /*
      * Called when an exercise is clicked
      * We start ManualActivity passing the id of the selected exercise
+     * //TODO: Factor ActivityType into intent
      */
     @Override
     public void onExerciseItemClick(int pos) {
         ExerciseEntry exerciseEntry = mExerciseHistoryData.get(pos);
         Long id = exerciseEntry.getId();
-        Intent intent = new Intent(getContext(), ManualEntryActivity.class);
-        intent.putExtra(EXERCISE_ENTRY_ID, id);
-        intent.putExtra(SOURCE, HistoryFragment.FRAGMENT_NAME);
-        startActivity(intent);
-        Log.d(TAG, "Exercise with _ID " + id + " Clicked");
+
+        // Launch Manual Entry Activity if exercise has that Activity Type
+        if (exerciseEntry.getInputType().equals(MyConstants.INPUT_MANUAL)){
+            Intent intent = new Intent(getContext(), ManualEntryActivity.class);
+            intent.putExtra(EXERCISE_ENTRY_ID, id);
+            intent.putExtra(MyConstants.SOURCE, HistoryFragment.FRAGMENT_NAME);
+            startActivity(intent);
+            Log.d(TAG, "onExerciseItemClick(): " + id + " Clicked");
+        }
+        else{
+            // Launch to Map Activity passing in the ExerciseEntry
+            Intent intent = new Intent(getContext(), MapActivity.class);
+            intent.putExtra(EXERCISE_ENTRY_ID, id);
+            intent.putExtra(MyConstants.SOURCE, HistoryFragment.FRAGMENT_NAME);
+            intent.putExtra(MyConstants.CURRENT_EXERCISE, exerciseEntry);
+            startActivity(intent);
+        }
+        Log.d(TAG, "onExerciseItemClick(): " + id + " Clicked");
     }
 }

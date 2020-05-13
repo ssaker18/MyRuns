@@ -14,7 +14,11 @@ import androidx.annotation.Nullable;
 
 import com.example.sunshine.myruns4.MapActivity;
 import com.example.sunshine.myruns4.R;
+import com.example.sunshine.myruns4.constants.MyConstants;
 import com.example.sunshine.myruns4.models.ExerciseEntry;
+
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 
 public class TrackingService extends Service {
@@ -33,15 +37,20 @@ public class TrackingService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "TrackingService: onCreate(): Thread ID is:" + Thread.currentThread().getId());
-        initExerciseEntry();
         createNotification();
     }
 
     /*
-     * Initialises an exercise entry
+     * Initialises an exercise entry with Activity and InputType
+     * Also date and Time since these are required fields in the DB schema
      */
-    private void initExerciseEntry() {
+    private void initExerciseEntry(String activityType, String inputType) {
         mExerciseEntry = new ExerciseEntry();
+        mExerciseEntry.setActivityType(activityType);
+        mExerciseEntry.setInputType(inputType);
+        mExerciseEntry.setTime(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))); // Record time to fine seconds
+        mExerciseEntry.setDate(java.time.LocalDate.now().toString());
+        mExerciseEntry.setDistance("0 kms");
     }
 
 
@@ -57,12 +66,15 @@ public class TrackingService extends Service {
         Log.d(TAG, "onStartCommand(): Thread ID is:" + Thread.currentThread().getId());
 
         if (intent != null) {
-            String activityType = intent.getStringExtra("Activity");
-            String inputType = intent.getStringExtra("InputType");
+            String activityType = intent.getStringExtra(MyConstants.ACTIVITY_TYPE);
+            String inputType = intent.getStringExtra(MyConstants.INPUT_TYPE);
 
-            if (activityType != null && inputType.equals("Automatic")) {
+            // set up exercise Entry
+            initExerciseEntry(activityType, inputType);
+
+            if (activityType != null && inputType.equals(MyConstants.INPUT_AUTOMATIC)) {
                 LocationIntentService.startLocationTracking(TrackingService.this, mExerciseEntry);
-            } else if (activityType != null && inputType.equals("GPS")) {
+            } else if (activityType != null && inputType.equals(MyConstants.INPUT_GPS)) {
                 LocationIntentService.startLocationTracking(TrackingService.this, mExerciseEntry);
                 ActivityIntentService.startActivityRecognition(TrackingService.this, mExerciseEntry);
             }
@@ -87,8 +99,8 @@ public class TrackingService extends Service {
         notificationManger.createNotificationChannel(channel);
 
         Notification notification = new Notification.Builder(this, channelId)
-                .setContentTitle("MyRuns")
-                .setContentText("Tracking your locations")
+                .setContentTitle(MyConstants.NOTIFICATION_TITLE)
+                .setContentText(MyConstants.NOTIFICATION_CONTENT_TEXT)
                 .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setOngoing(false)
                 .setContentIntent(pendingIntent)
