@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 
 import com.example.sunshine.myruns4.MapActivity;
 import com.example.sunshine.myruns4.R;
+import com.example.sunshine.myruns4.constants.MyConstants;
 import com.example.sunshine.myruns4.models.ExerciseEntry;
 
 
@@ -33,7 +34,6 @@ public class TrackingService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "TrackingService: onCreate(): Thread ID is:" + Thread.currentThread().getId());
-        initExerciseEntry();
         createNotification();
     }
 
@@ -55,14 +55,15 @@ public class TrackingService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
         Log.d(TAG, "onStartCommand(): Thread ID is:" + Thread.currentThread().getId());
+        initExerciseEntry();
 
         if (intent != null) {
             String activityType = intent.getStringExtra("Activity");
             String inputType = intent.getStringExtra("InputType");
 
-            if (activityType != null && inputType.equals("Automatic")) {
+            if (activityType != null && inputType.equals(MyConstants.ACTIVITY_AUTOMATIC)) {
                 LocationIntentService.startLocationTracking(TrackingService.this, mExerciseEntry);
-            } else if (activityType != null && inputType.equals("GPS")) {
+            } else if (activityType != null && inputType.equals(MyConstants.ACTIVITY_GPS)) {
                 LocationIntentService.startLocationTracking(TrackingService.this, mExerciseEntry);
                 ActivityIntentService.startActivityRecognition(TrackingService.this, mExerciseEntry);
             }
@@ -87,8 +88,8 @@ public class TrackingService extends Service {
         notificationManger.createNotificationChannel(channel);
 
         Notification notification = new Notification.Builder(this, channelId)
-                .setContentTitle("MyRuns")
-                .setContentText("Tracking your locations")
+                .setContentTitle(MyConstants.NOTIFICATION_TITLE)
+                .setContentText(MyConstants.NOTIFICATION_CONTENT_TEXT)
                 .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setOngoing(false)
                 .setContentIntent(pendingIntent)

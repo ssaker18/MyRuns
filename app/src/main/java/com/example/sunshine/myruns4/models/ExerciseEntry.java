@@ -3,6 +3,10 @@ package com.example.sunshine.myruns4.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.android.gms.maps.model.LatLng;
+
+import java.util.ArrayList;
+
 public class ExerciseEntry implements Parcelable {
     private Long id;
 
@@ -20,9 +24,7 @@ public class ExerciseEntry implements Parcelable {
     private String mTime;
     private String mDate;
     private String mPrivacy;
-    private  String mGPS;
-
-//     private ArrayList<Lat,Lng> mLocationList; // Location list
+    private ArrayList<LatLng> mLocationList = new ArrayList<>(); // Location list
 
 
     /*
@@ -58,7 +60,7 @@ public class ExerciseEntry implements Parcelable {
         mTime = in.readString();
         mDate = in.readString();
         mPrivacy = in.readString();
-        mGPS = in.readString();
+        mLocationList = in.readArrayList(LatLng.class.getClassLoader());
     }
 
     @Override
@@ -83,7 +85,7 @@ public class ExerciseEntry implements Parcelable {
         dest.writeString(mTime);
         dest.writeString(mDate);
         dest.writeString(mPrivacy);
-        dest.writeString(mGPS);
+        dest.writeArray(mLocationList.toArray());
     }
 
     @Override
@@ -214,16 +216,16 @@ public class ExerciseEntry implements Parcelable {
         return this.mPrivacy;
     }
 
-    public String getGPS() {
-        return this.mGPS;
+    public ArrayList<LatLng> getLocationList() {
+        return this.mLocationList;
     }
 
     public void setPrivacy(String newPrivacy){
         this.mPrivacy = newPrivacy;
     }
 
-    public void setGPS(String newGPS){
-        this.mGPS = newGPS;
+    public void setLocationList(ArrayList<LatLng> newLocationList){
+        this.mLocationList = newLocationList;
     }
 
     public String getDate() {

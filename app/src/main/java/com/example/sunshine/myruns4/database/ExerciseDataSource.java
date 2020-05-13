@@ -6,9 +6,16 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
+
 import com.example.sunshine.myruns4.models.ExerciseEntry;
+import com.google.android.gms.maps.model.LatLng;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ExerciseDataSource {
     private static final String TAG =  ExerciseDataSource.class.getName();
@@ -135,9 +142,32 @@ public class ExerciseDataSource {
         exercise.setAvgSpeed(cursor.getString(INDEX_AVG_SPEED));
         exercise.setClimb(cursor.getString(INDEX_CLIMB));
         exercise.setPrivacy(cursor.getString(INDEX_PRIVACY));
-        exercise.setGPS(cursor.getString(INDEX_GPS));
+        exercise.setLocationList(JsonToLocations(cursor.getString(INDEX_GPS)));
 
         return exercise;
+    }
+
+    /*
+     * Converts back JSON to an ArrayList of LatLngs
+     */
+    private ArrayList<LatLng> JsonToLocations(String string){
+
+        Log.d(TAG, "JsonToLocations() received " + string);
+        JSONArray jsonArray = null;
+        ArrayList<LatLng> locations = new ArrayList<>();
+        try {
+            jsonArray = new JSONArray(string);
+            for (int i = 0; i < jsonArray.length(); i++)
+            {
+                // TODO: create new LatLng each time
+                JSONObject jsonObj = jsonArray.getJSONObject(i);
+                System.out.println(jsonObj);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return locations;
     }
 
     /*
@@ -155,8 +185,22 @@ public class ExerciseDataSource {
         values.put(ExerciseEntryDbHelper.COLUMN_CLIMB, entry.getClimb());
         values.put(ExerciseEntryDbHelper.COLUMN_AVG_PACE, entry.getAvgPace());
         values.put(ExerciseEntryDbHelper.COLUMN_AVG_SPEED, entry.getAvgSpeed());
-        values.put(ExerciseEntryDbHelper.COLUMN_GPS_DATA, entry.getGPS());
+        values.put(ExerciseEntryDbHelper.COLUMN_GPS_DATA, locationListToJSON(entry.getLocationList()));
         values.put(ExerciseEntryDbHelper.COLUMN_PRIVACY, entry.getPrivacy());
+    }
+
+    /*
+     * Converts a location ArrayList to JSON in order to simplify
+     * insertion into the database
+     */
+    private String locationListToJSON(ArrayList<LatLng> locationList){
+        List<LatLng> list = locationList;
+        JSONArray jsArray = new JSONArray(list);
+//        for (int i = 0; i < locationList.size(); i++) {
+//            jsArray.put(locationList.get(i).latitude + " " + locationList.get(i).longitude);
+//        }
+        Log.d(TAG, "convertToJSONArray() " + jsArray.toString());
+        return jsArray.toString();
     }
 
     /*

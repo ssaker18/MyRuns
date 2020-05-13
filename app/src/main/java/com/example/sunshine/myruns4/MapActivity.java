@@ -19,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.example.sunshine.myruns4.constants.MyConstants;
 import com.example.sunshine.myruns4.database.ExerciseDataSource;
 import com.example.sunshine.myruns4.database.ExerciseInsertTask;
 import com.example.sunshine.myruns4.fragments.HistoryFragment;
@@ -31,9 +32,16 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.model.RoundCap;
+
+import java.util.ArrayList;
 
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
@@ -45,6 +53,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private Marker mMaker;
     private Intent serviceIntent;
     private ExerciseDataSource mDataSource;
+    private Marker mFirstMarker, mLastMarker;
 
 
     @Override
@@ -100,7 +109,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+//        mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE); // use one Map type
+        mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
 
         if (!checkPermission()) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
@@ -109,7 +120,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             startTrackingService();
         }
     }
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
@@ -125,12 +135,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      * and Location Tracking. We pass in as the intent the activity type and the input type
      */
     private void startTrackingService() {
-        String activityType = getIntent().getStringExtra("Activity");
-        String inputType = getIntent().getStringExtra("InputType");
+        String activityType = getIntent().getStringExtra(MyConstants.ACTIVITY_TYPE);
+        String inputType = getIntent().getStringExtra(MyConstants.INPUT_TYPE);
 
         serviceIntent = new Intent(this, TrackingService.class);
-        serviceIntent.putExtra("InputType", inputType);
-        serviceIntent.putExtra("Activity", activityType);
+        serviceIntent.putExtra(MyConstants.INPUT_TYPE, inputType);
+        serviceIntent.putExtra(MyConstants.ACTIVITY_TYPE, activityType);
 
         startForegroundService(serviceIntent);
     }
@@ -143,14 +153,76 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(LocationIntentService.BROADCAST_LOCATION)) {
                 Log.d(TrackingService.TAG, "MapActivity: onReceive(): Thread ID is:" + Thread.currentThread().getId());
-                Location location = intent.getParcelableExtra("location");
-                LatLng iAmHere = new LatLng(location.getLatitude(), location.getLongitude());
-                mMaker = mMap.addMarker(new MarkerOptions().position(iAmHere).title("I am home"));
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(iAmHere, 17));
+                Location location = intent.getParcelableExtra(MyConstants.LAST_LOCATION);
+                ExerciseEntry exerciseEntry = intent.getParcelableExtra(MyConstants.CURRENT_EXERCISE);
+                updateMapDisplay(exerciseEntry);
                 Toast.makeText(MapActivity.this, "Location Received", Toast.LENGTH_SHORT).show();
             }
         }
     };
+
+    /*
+     * Draws the LatLongs in the exercise Entry on the Map and updates the text view
+     */
+    private void updateMapDisplay(ExerciseEntry exerciseEntry) {
+        PolylineOptions polylineOptions = new PolylineOptions();
+        for (LatLng latLng : exerciseEntry.getLocationList()) {
+            polylineOptions.add(latLng);
+        }
+
+        // add Polyline to Map and style it
+        Polyline polyline = mMap.addPolyline(polylineOptions);
+        stylePolyline(polyline);
+
+        // set start and end Markers
+        setStartEndMarkers(exerciseEntry);
+
+        // Focus on the last location commented for debugging
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(exerciseEntry.getLocationList()
+                .get(exerciseEntry.getLocationList().size() - 1), 17));
+    }
+
+    /*
+     * Helper to render start and end Markers on PolyLine
+     */
+    private void setStartEndMarkers(ExerciseEntry exerciseEntry) {
+        if (exerciseEntry != null){
+            ArrayList<LatLng> locationList = exerciseEntry.getLocationList();
+            if (locationList != null) {
+                LatLng firstPosition = locationList.get(0);
+                LatLng lastPosition = locationList.get(locationList.size() - 1);
+
+                if (mFirstMarker == null) {
+                    mFirstMarker = mMap.addMarker(new MarkerOptions().position(firstPosition).icon(BitmapDescriptorFactory.defaultMarker(
+                            BitmapDescriptorFactory.HUE_RED)).title("Start Position"));
+                }
+
+                // Remove old Last location if new Last location is obtained
+                if (mLastMarker != null){
+                    mLastMarker.setPosition(lastPosition);
+                }else{
+                    mLastMarker = mMap.addMarker(new MarkerOptions().position(lastPosition).icon(BitmapDescriptorFactory.defaultMarker(
+                            BitmapDescriptorFactory.HUE_GREEN)).title("Recent Position"));
+                }
+
+
+            }
+
+
+        }
+
+    }
+
+    /*
+     * Set Custom styling for polyline of Map
+     */
+    private void stylePolyline(Polyline polyline) {
+        polyline.setStartCap(new RoundCap());
+        polyline.setEndCap(new RoundCap());
+        polyline.setWidth(MyConstants.POLYLINE_STROKE_WIDTH_PX);
+        polyline.setColor(MyConstants.POLYLINE_COLOR_PURPLE_ARGB);
+        polyline.setJointType(JointType.ROUND);
+    }
 
     /*
      * Creates a BroadCast Receiver for an ActivityDetection BroadCast

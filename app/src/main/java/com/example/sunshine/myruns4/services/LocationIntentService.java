@@ -8,11 +8,15 @@ import android.util.Log;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.example.sunshine.myruns4.constants.MyConstants;
 import com.example.sunshine.myruns4.models.ExerciseEntry;
 import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.maps.model.LatLng;
+
+import java.util.ArrayList;
 
 import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
 
@@ -29,6 +33,7 @@ public class LocationIntentService extends IntentService {
 
 
     private static final String TAG = LocationIntentService.class.getName();
+    private ExerciseEntry mCurrExercise;
 
     public LocationIntentService() {
         super("LocationIntentService");
@@ -42,12 +47,14 @@ public class LocationIntentService extends IntentService {
     }
 
     /*
-     * Starts this service to perform action LocationTracking with the given parameters.
-     * TODO: Customize helper method to start IntentService
+     * Provides static method for starting this Intent service
+     * to perform action LocationTracking with the given parameters.
+     * Caller must provide a valid currentExercise
      */
     public static void startLocationTracking(Context context, ExerciseEntry currentExercise) {
         Intent intent = new Intent(context, LocationIntentService.class);
         intent.setAction(LOCATION_TRACKING);
+        intent.putExtra(MyConstants.CURRENT_EXERCISE, currentExercise);
         context.startService(intent);
         Log.d(TAG, "startLocationTracking()");
     }
@@ -58,7 +65,7 @@ public class LocationIntentService extends IntentService {
         if (intent != null) {
             final String action = intent.getAction();
             if (LOCATION_TRACKING.equals(action)) {
-                ExerciseEntry exerciseEntry = null; // grab from intent
+                ExerciseEntry exerciseEntry = intent.getParcelableExtra(MyConstants.CURRENT_EXERCISE); // grab from intent
                 handleLocationTracking(exerciseEntry);
                 Log.d(TAG, "onHandleIntent(): starting Tracking");
             }else{
@@ -74,6 +81,7 @@ public class LocationIntentService extends IntentService {
      */
     private void handleLocationTracking(ExerciseEntry exerciseEntry) {
         Log.d(TAG, "onHandleIntent(): starting Tracking handling");
+        mCurrExercise = exerciseEntry;
         startLocationUpdates();
     }
 
@@ -87,19 +95,20 @@ public class LocationIntentService extends IntentService {
         // check if the system can support the criteria
         getFusedLocationProviderClient(this).requestLocationUpdates(locationRequest, mLocationCallback, Looper.myLooper());
         Log.d(TAG, "onStartLocationUpdates(): Thread ID is:" + Thread.currentThread().getId());
-
     }
 
 
     private void initLocationCallback(){
-         mLocationCallback = new LocationCallback()  {
+        mLocationCallback = new LocationCallback()  {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
                 Log.d(TAG, " onLocationResult(): Thread ID is:" + Thread.currentThread().getId());
                 Log.d(TAG, " onLocationResult(): Location is:" + locationResult.toString());
                 Intent intent = new Intent(BROADCAST_LOCATION);
-                intent.putExtra("location", locationResult.getLastLocation());
+                intent.putExtra(MyConstants.LAST_LOCATION, locationResult.getLastLocation()); // Not needed since theoretically we're update the exercise with new locations
+                addNewLocationToExercise(locationResult);
+                intent.putExtra(MyConstants.CURRENT_EXERCISE, mCurrExercise);
                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
             }
 
@@ -111,5 +120,28 @@ public class LocationIntentService extends IntentService {
         };
     }
 
+    /*
+     * Called in onLocationResult each time a new location is read
+     * We add the new location to the current Exercise's location list
+     */
+    private void addNewLocationToExercise(LocationResult locationResult) {
+        ArrayList<LatLng> oldLocationList = mCurrExercise.getLocationList();
+        double latitude = locationResult.getLastLocation().getLatitude();
+        double longitude = locationResult.getLastLocation().getLongitude();
+        LatLng newLatLng = new LatLng(latitude, longitude);
+
+        ArrayList<LatLng> newLocationList;
+        if (oldLocationList == null){
+            // very first location received
+            newLocationList = new ArrayList<>();
+            newLocationList.add(newLatLng);
+            mCurrExercise.setLocationList(newLocationList);
+        }else{
+            // multiple locations obtained add on to the end
+            newLocationList = oldLocationList;
+            newLocationList.add(newLatLng);
+            mCurrExercise.setLocationList(newLocationList);
+        }
+    }
 
 }
