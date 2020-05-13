@@ -18,11 +18,12 @@ import android.widget.Spinner;
 import com.example.sunshine.myruns4.R;
 import com.example.sunshine.myruns4.ManualEntryActivity;
 import com.example.sunshine.myruns4.MapActivity;
+import com.example.sunshine.myruns4.constants.MyConstants;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class StartFragment extends Fragment implements View.OnClickListener {
-    public static final String FRAGMENT_NAME = "StartFragment";
-    private String SOURCE = "Source";
+    public static final String FRAGMENT_NAME = "StartFragment"; // TODO: Refactor to MyConstants
+    private String SOURCE = "Source"; //TODO: Refactor to MyConstants
     private Spinner mInputTypeSpinner;
     private Spinner mActivityTypeSpinner;
 
@@ -73,7 +74,6 @@ public class StartFragment extends Fragment implements View.OnClickListener {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-
             }
         });
         super.onViewCreated(view, savedInstanceState);
@@ -87,21 +87,20 @@ public class StartFragment extends Fragment implements View.OnClickListener {
             String input_type = mInputTypeSpinner.getSelectedItem().toString();
             String activity_type = mActivityTypeSpinner.getSelectedItem().toString();
             if (input_type != null && activity_type != null) {
-                if (input_type.equals("Manual")) {
+                if (input_type.equals(MyConstants.MANUAL_INPUT_TYPE)) {
                     intent = new Intent(getContext(), ManualEntryActivity.class);
-                    intent.putExtra("InputType", input_type);
-                    intent.putExtra("Activity", activity_type);
+                    intent.putExtra(MyConstants.INPUT_TYPE, input_type);
+                    intent.putExtra(MyConstants.ACTIVITY_TYPE, activity_type);
                     intent.putExtra(SOURCE, FRAGMENT_NAME);
                 } else {
                     // GPS or Automatic: Launch Map Activity
                     intent = new Intent(getContext(), MapActivity.class);
-                    intent.putExtra("InputType", input_type);
-                    intent.putExtra("Activity", activity_type);
+                    intent.putExtra(MyConstants.INPUT_TYPE, input_type);
+                    intent.putExtra(MyConstants.ACTIVITY_TYPE, activity_type);
                     intent.putExtra(SOURCE, FRAGMENT_NAME);
                 }
             }
         }
-
         if (intent != null) {
             startActivity(intent);
         }

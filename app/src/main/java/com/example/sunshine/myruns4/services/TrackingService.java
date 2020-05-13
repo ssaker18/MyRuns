@@ -17,6 +17,9 @@ import com.example.sunshine.myruns4.R;
 import com.example.sunshine.myruns4.constants.MyConstants;
 import com.example.sunshine.myruns4.models.ExerciseEntry;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+
 
 public class TrackingService extends Service {
     public static final String TAG = TrackingService.class.getName();
@@ -38,10 +41,15 @@ public class TrackingService extends Service {
     }
 
     /*
-     * Initialises an exercise entry
+     * Initialises an exercise entry with Activity and InputType
+     * Also date and Time since these are required fields in the DB schema
      */
-    private void initExerciseEntry() {
+    private void initExerciseEntry(String activityType, String inputType) {
         mExerciseEntry = new ExerciseEntry();
+        mExerciseEntry.setActivityType(activityType);
+        mExerciseEntry.setInputType(inputType);
+        mExerciseEntry.setTime(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
+        mExerciseEntry.setDate(java.time.LocalDate.now().toString());
     }
 
 
@@ -55,11 +63,13 @@ public class TrackingService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
         Log.d(TAG, "onStartCommand(): Thread ID is:" + Thread.currentThread().getId());
-        initExerciseEntry();
 
         if (intent != null) {
-            String activityType = intent.getStringExtra("Activity");
-            String inputType = intent.getStringExtra("InputType");
+            String activityType = intent.getStringExtra(MyConstants.ACTIVITY_TYPE);
+            String inputType = intent.getStringExtra(MyConstants.INPUT_TYPE);
+
+            // set up exercise Entry
+            initExerciseEntry(activityType, inputType);
 
             if (activityType != null && inputType.equals(MyConstants.ACTIVITY_AUTOMATIC)) {
                 LocationIntentService.startLocationTracking(TrackingService.this, mExerciseEntry);

@@ -19,5 +19,7 @@ public class MyConstants {
 
     public static final String INPUT_TYPE = "InputType";
     public static final String ACTIVITY_TYPE = "ActivityType";
+
+    public static final String MANUAL_INPUT_TYPE = "Manual";
     public static String CURRENT_EXERCISE = "current_exercise";
 }

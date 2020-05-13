@@ -1,11 +1,5 @@
 package com.example.sunshine.myruns4;
 
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -18,6 +12,12 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.example.sunshine.myruns4.constants.MyConstants;
 import com.example.sunshine.myruns4.database.ExerciseDataSource;
@@ -50,10 +50,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private static final String TAG = MapActivity.class.getName();
     private GoogleMap mMap;
     private int PERMISSION_REQUEST_CODE = 1;
-    private Marker mMaker;
     private Intent serviceIntent;
     private ExerciseDataSource mDataSource;
     private Marker mFirstMarker, mLastMarker;
+    private ManualEntryActivity.DeleteExerciseTask mDeleteTask;
+    private ExerciseEntry mExerciseEntry;
 
 
     @Override
@@ -72,8 +73,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mDataSource = new ExerciseDataSource(this);
         mDataSource.open();
 
-        // Initialise DeleteTask
-        // mDeleteTask = new DeleteExerciseTask();
+        // Initialise DeleteTask TODO: Refractor DeleteExerciseTask to it's own class
+//         mDeleteTask = new ManualEntryActivity.DeleteExerciseTask();
 
         // Register Broadcast Receivers for Location Tracking and Activity Recognition
         registerBroadcastReceivers();
@@ -154,8 +155,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             if (intent.getAction().equals(LocationIntentService.BROADCAST_LOCATION)) {
                 Log.d(TrackingService.TAG, "MapActivity: onReceive(): Thread ID is:" + Thread.currentThread().getId());
                 Location location = intent.getParcelableExtra(MyConstants.LAST_LOCATION);
-                ExerciseEntry exerciseEntry = intent.getParcelableExtra(MyConstants.CURRENT_EXERCISE);
-                updateMapDisplay(exerciseEntry);
+                mExerciseEntry = intent.getParcelableExtra(MyConstants.CURRENT_EXERCISE);
+                updateMapDisplay(mExerciseEntry);
                 Toast.makeText(MapActivity.this, "Location Received", Toast.LENGTH_SHORT).show();
             }
         }
@@ -204,13 +205,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     mLastMarker = mMap.addMarker(new MarkerOptions().position(lastPosition).icon(BitmapDescriptorFactory.defaultMarker(
                             BitmapDescriptorFactory.HUE_GREEN)).title("Recent Position"));
                 }
-
-
             }
-
-
         }
-
     }
 
     /*
@@ -239,10 +235,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     //******** Check run time permission for locationManager. This is for v23+  ********
     private boolean checkPermission() {
         int result = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-        if (result == PackageManager.PERMISSION_GRANTED)
-            return true;
-        else
-            return false;
+        return result == PackageManager.PERMISSION_GRANTED;
     }
 
 
@@ -282,9 +275,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 return true;
             case R.id.save_activity_entry:
                 // calls the save method on the database helper
-//                ExerciseEntry newEntry = captureNewEntry();
-//                ExerciseInsertTask task = new ExerciseInsertTask(this, mDataSource);
-//                task.execute(newEntry);
+                ExerciseInsertTask task = new ExerciseInsertTask(this, mDataSource);
+                task.execute(mExerciseEntry);
                 Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
                 closeAllServices();
                 startActivity(new Intent(MapActivity.this, MainActivity.class));
