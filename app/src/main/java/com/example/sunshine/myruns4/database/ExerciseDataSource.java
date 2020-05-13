@@ -148,6 +148,7 @@ public class ExerciseDataSource {
 
     /*
      * Converts back JSON to an ArrayList of LatLngs
+     * TODO: Json to Locations
      */
     private ArrayList<LatLng> JsonToLocations(String string) {
 
@@ -190,6 +191,7 @@ public class ExerciseDataSource {
     /*
      * Converts a location ArrayList to JSON in order to simplify
      * insertion into the database
+     * TODO: locationTOJSON
      */
     private String locationListToJSON(ArrayList<LatLng> locationList) {
         List<LatLng> list = locationList;

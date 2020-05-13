@@ -238,7 +238,7 @@ public class ExerciseEntry implements Parcelable {
 
         // May have to strip off seconds component
         if (time.length() > 5) {
-            time.substring(0, time.length() - 3);
+            time = time.substring(0, time.length() - 3);
         }
         return time;
 

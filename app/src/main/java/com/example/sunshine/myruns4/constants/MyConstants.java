@@ -23,6 +23,7 @@ public class MyConstants {
 
     /* Tag for id of Exercise */
     public static final String EXERCISE_ENTRY_ID = "id";
+    public static final int FETCH_SINGLE_EXERCISE_ID = 1;
 
 
     public static String CURRENT_EXERCISE = "current_exercise";

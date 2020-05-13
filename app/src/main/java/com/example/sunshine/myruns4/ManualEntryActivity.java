@@ -319,7 +319,7 @@ public class ManualEntryActivity extends AppCompatActivity
 
         if (entry == null) {
             mItems.add(new ManualEntryModel("Activity",
-                    getIntent().getStringExtra("Activity")));
+                    getIntent().getStringExtra(MyConstants.ACTIVITY_TYPE)));
             mItems.add(new ManualEntryModel("Date",
                     java.time.LocalDate.now().toString()));
             mItems.add(new ManualEntryModel("Time",
@@ -480,7 +480,7 @@ public class ManualEntryActivity extends AppCompatActivity
     @NonNull
     @Override
     public Loader<ArrayList<ExerciseEntry>> onCreateLoader(int id, @Nullable Bundle args) {
-        if (id == FETCH_SINGLE_EXERCISE_ID) {
+        if (id == MyConstants.FETCH_SINGLE_EXERCISE_ID) {
             Intent intent = getIntent();
             if (intent != null) {
                 Long exerciseID = intent.getLongExtra(MyConstants.EXERCISE_ENTRY_ID, -1);
@@ -495,6 +495,24 @@ public class ManualEntryActivity extends AppCompatActivity
         return null;
     }
 
+    /*
+     * Called when AsyncTaskLoader for Fetching Single Entry is finished
+     * We update the adapter with contents of the fetched Entry
+     */
+    @Override
+    public void onLoadFinished(@NonNull Loader<ArrayList<ExerciseEntry>> loader, ArrayList<ExerciseEntry> data) {
+        Log.d(TAG, "onLoadFinished(): Thread ID " + Thread.currentThread().getId());
+        if (loader.getId() == MyConstants.FETCH_SINGLE_EXERCISE_ID) {
+            if (data.size() > 0) {
+                fillUpAdapterArray(data.get(0));
+                mManualEntryAdapter.notifyDataSetChanged();
+            }
+        }
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<ArrayList<ExerciseEntry>> loader) {
+    }
 
     /*
      * Called when user hits back button
@@ -504,25 +522,5 @@ public class ManualEntryActivity extends AppCompatActivity
         startActivity(new Intent(ManualEntryActivity.this, MainActivity.class));
         finish();
         super.onBackPressed();
-    }
-
-    /*
-     * Called when AsyncTaskLoader for Fetching Single Entry is finished
-     * We update the adapter with contents of the fetched Entry
-     */
-    @Override
-    public void onLoadFinished(@NonNull Loader<ArrayList<ExerciseEntry>> loader, ArrayList<ExerciseEntry> data) {
-        Log.d(TAG, "onLoadFinished(): Thread ID " + Thread.currentThread().getId());
-        if (loader.getId() == FETCH_SINGLE_EXERCISE_ID) {
-            if (data.size() > 0) {
-                fillUpAdapterArray(data.get(0));
-                mManualEntryAdapter.notifyDataSetChanged();
-            }
-        }
-    }
-
-
-    @Override
-    public void onLoaderReset(@NonNull Loader<ArrayList<ExerciseEntry>> loader) {
     }
 }
