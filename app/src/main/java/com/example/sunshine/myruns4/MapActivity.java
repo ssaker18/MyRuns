@@ -41,7 +41,12 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RoundCap;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Date;
 
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
@@ -154,7 +159,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(LocationIntentService.BROADCAST_LOCATION)) {
                 Log.d(TrackingService.TAG, "MapActivity: onReceive(): Thread ID is:" + Thread.currentThread().getId());
-                Location location = intent.getParcelableExtra(MyConstants.LAST_LOCATION);
                 mExerciseEntry = intent.getParcelableExtra(MyConstants.CURRENT_EXERCISE);
                 updateMapDisplay(mExerciseEntry);
                 Toast.makeText(MapActivity.this, "Location Received", Toast.LENGTH_SHORT).show();
@@ -274,7 +278,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 finish();
                 return true;
             case R.id.save_activity_entry:
-                // calls the save method on the database helper
+                // Eventually calls the save method on the database helper
+                captureDuration();
                 ExerciseInsertTask task = new ExerciseInsertTask(this, mDataSource);
                 task.execute(mExerciseEntry);
                 Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
@@ -304,6 +309,25 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void captureDuration() {
+        if (mExerciseEntry != null ){
+
+            LocalTime startTime = LocalTime.parse(mExerciseEntry.getTime());
+            LocalTime now = LocalTime.now();
+
+            long secs =  now.getSecond() - startTime.getSecond();
+            long hours = now.getHour() - startTime.getHour();
+            long mins = now.getMinute() - startTime.getMinute();
+
+            // convert everything else to mins
+            mins = mins + hours * 60 + (secs * (1/60));
+
+            String duration  = mins + " mins";
+            Log.d(TAG, "captureDuration() " + duration);
+            mExerciseEntry.setDuration(duration);
         }
     }
 

@@ -143,7 +143,6 @@ public class ExerciseDataSource {
         exercise.setClimb(cursor.getString(INDEX_CLIMB));
         exercise.setPrivacy(cursor.getString(INDEX_PRIVACY));
         exercise.setLocationList(JsonToLocations(cursor.getString(INDEX_GPS)));
-
         return exercise;
     }
 

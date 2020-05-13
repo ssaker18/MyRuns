@@ -232,6 +232,14 @@ public class ExerciseEntry implements Parcelable {
         return this.mDateTime.substring(0, mDateTime.indexOf(" "));
     }
     public String getTime() {
-        return this.mDateTime.substring(mDateTime.indexOf(" ") + 1);
+        String time = this.mDateTime.substring(
+                mDateTime.indexOf(" ") + 1);
+
+        // May have to strip off seconds component
+        if (time.length() > 5){
+            time.substring(0, time.length() - 3);
+        }
+        return time;
+
     }
 }

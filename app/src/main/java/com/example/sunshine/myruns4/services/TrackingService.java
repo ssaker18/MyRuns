@@ -48,8 +48,9 @@ public class TrackingService extends Service {
         mExerciseEntry = new ExerciseEntry();
         mExerciseEntry.setActivityType(activityType);
         mExerciseEntry.setInputType(inputType);
-        mExerciseEntry.setTime(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
+        mExerciseEntry.setTime(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))); // Record time to fine seconds
         mExerciseEntry.setDate(java.time.LocalDate.now().toString());
+        mExerciseEntry.setDistance("0 kms");
     }
 
 
@@ -71,9 +72,9 @@ public class TrackingService extends Service {
             // set up exercise Entry
             initExerciseEntry(activityType, inputType);
 
-            if (activityType != null && inputType.equals(MyConstants.ACTIVITY_AUTOMATIC)) {
+            if (activityType != null && inputType.equals(MyConstants.INPUT_AUTOMATIC)) {
                 LocationIntentService.startLocationTracking(TrackingService.this, mExerciseEntry);
-            } else if (activityType != null && inputType.equals(MyConstants.ACTIVITY_GPS)) {
+            } else if (activityType != null && inputType.equals(MyConstants.INPUT_GPS)) {
                 LocationIntentService.startLocationTracking(TrackingService.this, mExerciseEntry);
                 ActivityIntentService.startActivityRecognition(TrackingService.this, mExerciseEntry);
             }

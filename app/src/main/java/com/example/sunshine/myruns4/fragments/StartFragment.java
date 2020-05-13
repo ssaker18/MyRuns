@@ -23,7 +23,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class StartFragment extends Fragment implements View.OnClickListener {
     public static final String FRAGMENT_NAME = "StartFragment"; // TODO: Refactor to MyConstants
-    private String SOURCE = "Source"; //TODO: Refactor to MyConstants
     private Spinner mInputTypeSpinner;
     private Spinner mActivityTypeSpinner;
 
@@ -87,17 +86,17 @@ public class StartFragment extends Fragment implements View.OnClickListener {
             String input_type = mInputTypeSpinner.getSelectedItem().toString();
             String activity_type = mActivityTypeSpinner.getSelectedItem().toString();
             if (input_type != null && activity_type != null) {
-                if (input_type.equals(MyConstants.MANUAL_INPUT_TYPE)) {
+                if (input_type.equals(MyConstants.INPUT_MANUAL)) {
                     intent = new Intent(getContext(), ManualEntryActivity.class);
                     intent.putExtra(MyConstants.INPUT_TYPE, input_type);
                     intent.putExtra(MyConstants.ACTIVITY_TYPE, activity_type);
-                    intent.putExtra(SOURCE, FRAGMENT_NAME);
+                    intent.putExtra(MyConstants.SOURCE, FRAGMENT_NAME);
                 } else {
                     // GPS or Automatic: Launch Map Activity
                     intent = new Intent(getContext(), MapActivity.class);
                     intent.putExtra(MyConstants.INPUT_TYPE, input_type);
                     intent.putExtra(MyConstants.ACTIVITY_TYPE, activity_type);
-                    intent.putExtra(SOURCE, FRAGMENT_NAME);
+                    intent.putExtra(MyConstants.SOURCE, FRAGMENT_NAME);
                 }
             }
         }

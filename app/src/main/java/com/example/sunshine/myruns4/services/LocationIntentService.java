@@ -25,9 +25,9 @@ public class LocationIntentService extends IntentService {
     private static final long UPDATE_INTERVAL = 10000;
     private static final long FAST_INTERVAL = 1000;
 
-    private static final String LOCATION_TRACKING = "Location Tracking";
-    public static final String BROADCAST_LOCATION = "BroadCast Location";
-    public static final String BROADCAST_ACTIVITY = "BroadCast Activity";
+    private static final String LOCATION_TRACKING = "Location Tracking"; //TODO
+    public static final String BROADCAST_LOCATION = "BroadCast Location"; //TODO
+    public static final String BROADCAST_ACTIVITY = "BroadCast Activity";  //TODO
 
     private LocationCallback mLocationCallback;
 
@@ -59,7 +59,9 @@ public class LocationIntentService extends IntentService {
         Log.d(TAG, "startLocationTracking()");
     }
 
-
+    /*
+     * Entry Point for Intent Service. Caller calls startLocationTracking to begin intentService
+     */
     @Override
     protected void onHandleIntent(Intent intent) {
         if (intent != null) {
@@ -77,7 +79,6 @@ public class LocationIntentService extends IntentService {
     /*
      * Handle action LocationTracking in the provided background thread with the provided
      * parameters.
-     * TODO: Handle Location Tracking
      */
     private void handleLocationTracking(ExerciseEntry exerciseEntry) {
         Log.d(TAG, "onHandleIntent(): starting Tracking handling");
@@ -85,6 +86,9 @@ public class LocationIntentService extends IntentService {
         startLocationUpdates();
     }
 
+    /*
+     * Responsible for setting up criteria and initialising Location Request Calls
+     */
     private void startLocationUpdates() {
         // set criteria
         LocationRequest locationRequest = new LocationRequest();
@@ -97,7 +101,10 @@ public class LocationIntentService extends IntentService {
         Log.d(TAG, "onStartLocationUpdates(): Thread ID is:" + Thread.currentThread().getId());
     }
 
-
+    /*
+     * Sets up CallBack for location Requests. OnLocationResult we add the new location
+     * to the exercise entry's location list and send broadcast
+     */
     private void initLocationCallback(){
         mLocationCallback = new LocationCallback()  {
             @Override
@@ -106,7 +113,6 @@ public class LocationIntentService extends IntentService {
                 Log.d(TAG, " onLocationResult(): Thread ID is:" + Thread.currentThread().getId());
                 Log.d(TAG, " onLocationResult(): Location is:" + locationResult.toString());
                 Intent intent = new Intent(BROADCAST_LOCATION);
-                intent.putExtra(MyConstants.LAST_LOCATION, locationResult.getLastLocation()); // Not needed since theoretically we're update the exercise with new locations
                 addNewLocationToExercise(locationResult);
                 intent.putExtra(MyConstants.CURRENT_EXERCISE, mCurrExercise);
                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
