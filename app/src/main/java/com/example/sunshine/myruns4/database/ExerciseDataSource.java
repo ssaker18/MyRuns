@@ -10,10 +10,10 @@ import android.util.Log;
 import com.example.sunshine.myruns4.models.ExerciseEntry;
 import com.google.android.gms.maps.model.LatLng;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -153,18 +153,19 @@ public class ExerciseDataSource {
     private ArrayList<LatLng> JsonToLocations(String string) {
 
         Log.d(TAG, "JsonToLocations() received " + string);
-        JSONArray jsonArray = null;
-        ArrayList<LatLng> locations = new ArrayList<>();
-        try {
-            jsonArray = new JSONArray(string);
-            for (int i = 0; i < jsonArray.length(); i++) {
-                // TODO: create new LatLng each time
-                JSONObject jsonObj = jsonArray.getJSONObject(i);
-                System.out.println(jsonObj);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        Gson gson = new Gson();
+        ArrayList<LatLng> locations = gson.fromJson(string, new TypeToken<ArrayList<LatLng>>() {}.getType());
+
+//        try {
+//            jsonArray = new JSONArray(string);
+//            for (int i = 0; i < jsonArray.length(); i++) {
+//                // TODO: create new LatLng each time
+//                JSONObject jsonObj = jsonArray.getJSONObject(i);
+//                System.out.println(jsonObj);
+//            }
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
 
         return locations;
     }
@@ -195,12 +196,14 @@ public class ExerciseDataSource {
      */
     private String locationListToJSON(ArrayList<LatLng> locationList) {
         List<LatLng> list = locationList;
-        JSONArray jsArray = new JSONArray(list);
+        Gson gson = new Gson();
+        String json = gson.toJson(list, new TypeToken<List<LatLng>>() {}.getType());
+        //JSONArray jsArray = new JSONArray(list);
 //        for (int i = 0; i < locationList.size(); i++) {
 //            jsArray.put(locationList.get(i).latitude + " " + locationList.get(i).longitude);
 //        }
-        Log.d(TAG, "convertToJSONArray() " + jsArray.toString());
-        return jsArray.toString();
+        Log.d(TAG, "convertToJSONArray() " + json);
+        return json;
     }
 
     /*

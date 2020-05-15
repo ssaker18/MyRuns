@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -16,6 +17,8 @@ import com.example.sunshine.myruns4.MapActivity;
 import com.example.sunshine.myruns4.R;
 import com.example.sunshine.myruns4.constants.MyConstants;
 import com.example.sunshine.myruns4.models.ExerciseEntry;
+import com.google.android.gms.location.ActivityRecognitionClient;
+import com.google.android.gms.tasks.Task;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -24,8 +27,11 @@ import java.time.format.DateTimeFormatter;
 public class TrackingService extends Service {
     public static final String TAG = TrackingService.class.getName();
     private static final int SERVICE_NOTIFICATION_ID = 1;
+    private static final long DETECTION_INTERVAL_IN_MILLISECONDS =5000;
     private NotificationManager notificationManger;
     private ExerciseEntry mExerciseEntry;
+    private PendingIntent mPendingIntent;
+    private ActivityRecognitionClient mActivityRecognitionClient;
 
 
     public TrackingService() {
@@ -72,14 +78,31 @@ public class TrackingService extends Service {
             // set up exercise Entry
             initExerciseEntry(activityType, inputType);
 
-            if (activityType != null && inputType.equals(MyConstants.INPUT_AUTOMATIC)) {
+            if (activityType != null) {
                 LocationIntentService.startLocationTracking(TrackingService.this, mExerciseEntry);
-            } else if (activityType != null && inputType.equals(MyConstants.INPUT_GPS)) {
-                LocationIntentService.startLocationTracking(TrackingService.this, mExerciseEntry);
-                ActivityIntentService.startActivityRecognition(TrackingService.this, mExerciseEntry);
+                //ActivityIntentService.startActivityRecognition(TrackingService.this, mExerciseEntry);
+
+                //start up activity recognition
+                mActivityRecognitionClient= new ActivityRecognitionClient(this);
+                Intent mIntentService = new Intent(this, ActivityIntentService.class);
+                Bundle bundle= new Bundle();
+                bundle.putParcelable(MyConstants.CURRENT_EXERCISE,mExerciseEntry);
+                mIntentService.putExtra(MyConstants.CURRENT_EXERCISE,bundle);
+                mIntentService.setAction(ActivityIntentService.getActivityRecognition());
+                mPendingIntent = PendingIntent.getService(this,
+                        1, mIntentService, PendingIntent.FLAG_UPDATE_CURRENT);
+                requestActivityUpdates();
             }
         }
         return START_STICKY;
+    }
+
+    private void requestActivityUpdates() {
+        if (mActivityRecognitionClient != null) {
+            Task<Void> task = mActivityRecognitionClient.requestActivityUpdates(
+                    DETECTION_INTERVAL_IN_MILLISECONDS,
+                    mPendingIntent);
+        }
     }
 
     /*
@@ -112,6 +135,9 @@ public class TrackingService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (mActivityRecognitionClient != null) {
+            Task<Void> task = mActivityRecognitionClient.removeActivityUpdates(mPendingIntent);
+        }
         Log.d(TAG, "onDestroy(): Thread ID is: " + Thread.currentThread().getId());
     }
 
