@@ -23,8 +23,6 @@ public class ActivityIntentService extends IntentService {
 
     private static final String TAG = ActivityIntentService.class.getName();
     private static final String ACTIVITY_RECOGNITION = "Activity Recognition";
-    public static final long DETECTION_INTERVAL_IN_MILLISECONDS = 20000; // every 20 seconds,
-    // drains less battery and not as noisy data
     private ExerciseEntry mCurrExercise;
     private ActivityRecognitionClient mActivityRecognitionClient;
     private PendingIntent mPendingIntent;
@@ -81,7 +79,7 @@ public class ActivityIntentService extends IntentService {
     protected void onHandleIntent(Intent intent) {//retrieve currentExercise
         if (intent != null) {
             Bundle bundle = intent.getBundleExtra(MyConstants.CURRENT_EXERCISE);
-            mCurrExercise =bundle.getParcelable(MyConstants.CURRENT_EXERCISE);
+            mCurrExercise = bundle.getParcelable(MyConstants.CURRENT_EXERCISE);
             final String action = intent.getAction();
             if (ACTIVITY_RECOGNITION.equals(action)) {
                 handleActivityRecognition(intent);
@@ -91,12 +89,11 @@ public class ActivityIntentService extends IntentService {
 
     /*
      * Handles action ActivityRecognition in the provided background thread
-     * TODO: Handle Activity Recognition
      */
     private void handleActivityRecognition(Intent intent) {
         ActivityRecognitionResult extractedResults = ActivityRecognitionResult.extractResult(intent);
 
-        if (extractedResults==null) {
+        if (extractedResults == null) {
             return;
         }
 
@@ -128,6 +125,7 @@ public class ActivityIntentService extends IntentService {
         Intent toBroadcast = new Intent(ACTIVITY_RECOGNITION);
         //send updated ExerciseEntry
         toBroadcast.putExtra(MyConstants.CURRENT_EXERCISE, mCurrExercise);
+        toBroadcast.putExtra(MyConstants.DETECTED_ACTIVITY, convertDetectedActivityToString(detectedActivities.get(maxIndex).getType()));
         //might need to be updated_exercises for the constant tag
         LocalBroadcastManager.getInstance(this).sendBroadcast(toBroadcast);
 

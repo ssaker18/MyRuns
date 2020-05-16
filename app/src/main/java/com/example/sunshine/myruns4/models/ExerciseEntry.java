@@ -25,6 +25,7 @@ public class ExerciseEntry implements Parcelable {
     private String mDate;
     private String mPrivacy;
     private ArrayList<LatLng> mLocationList = new ArrayList<>(); // Location list
+    private double mStartAltitude;
 
 
     /*
@@ -61,6 +62,7 @@ public class ExerciseEntry implements Parcelable {
         mDate = in.readString();
         mPrivacy = in.readString();
         mLocationList = in.readArrayList(LatLng.class.getClassLoader());
+        mStartAltitude = in.readDouble();
     }
 
     @Override
@@ -86,6 +88,7 @@ public class ExerciseEntry implements Parcelable {
         dest.writeString(mDate);
         dest.writeString(mPrivacy);
         dest.writeArray(mLocationList.toArray());
+        dest.writeDouble(mStartAltitude);
     }
 
     @Override
@@ -242,5 +245,13 @@ public class ExerciseEntry implements Parcelable {
         }
         return time;
 
+    }
+
+    public void setStartAltitude(double startAltitude) {
+        mStartAltitude = startAltitude;
+    }
+
+    public double getStartAltitude() {
+        return mStartAltitude;
     }
 }

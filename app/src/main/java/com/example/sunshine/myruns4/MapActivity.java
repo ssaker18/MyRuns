@@ -22,6 +22,7 @@ import androidx.core.content.ContextCompat;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.preference.PreferenceManager;
 
 import com.example.sunshine.myruns4.constants.MyConstants;
 import com.example.sunshine.myruns4.database.DeleteExerciseTask;
@@ -47,6 +48,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RoundCap;
 
+import java.text.DecimalFormat;
 import java.time.LocalTime;
 import java.util.ArrayList;
 
@@ -80,6 +82,7 @@ public class MapActivity extends AppCompatActivity
         mClimbView = findViewById(R.id.climb);
         mCalorieView = findViewById(R.id.calorie);
         mDistanceView = findViewById(R.id.distance);
+
         // set up action bar
         setUpActionBar();
 
@@ -107,7 +110,7 @@ public class MapActivity extends AppCompatActivity
                         break;
                     case StartFragment.FRAGMENT_NAME:
                         // Register Broadcast Receivers for Location Tracking and Activity Recognition
-                        registerBroadcastReceivers();
+                        registerBroadcastReceivers(entry);
                         startTrackingService();
                         break;
                 }
@@ -120,15 +123,19 @@ public class MapActivity extends AppCompatActivity
     /*
      * Register BroadCastReceivers for Location and Activity Recognition Requests
      */
-    private void registerBroadcastReceivers() {
+    private void registerBroadcastReceivers(Intent entry) {
         LocalBroadcastManager.getInstance(this).registerReceiver(mLocationBroadcastReceiver,
                 new IntentFilter(LocationIntentService.BROADCAST_LOCATION));
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(mActivityDetectionBroadcastReceiver,
-                new IntentFilter(ActivityIntentService.getActivityRecognition()));
-        Log.d(TAG, "registerBroadcastReceivers()");
-
+        // register an activity detectection listener only if we're in Automatic Mode
+        String inputMode = entry.getStringExtra(MyConstants.INPUT_TYPE);
+        if (inputMode.equals(MyConstants.INPUT_AUTOMATIC)) {
+            LocalBroadcastManager.getInstance(this).registerReceiver(mActivityDetectionBroadcastReceiver,
+                    new IntentFilter(ActivityIntentService.getActivityRecognition()));
+            Log.d(TAG, "registerBroadcastReceivers()");
+        }
     }
+
     /*
      * Sets up Action Bar with back button and title
      */
@@ -147,6 +154,7 @@ public class MapActivity extends AppCompatActivity
     private void setUpMapFragment() {
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+        assert mapFragment != null;
         mapFragment.getMapAsync(this);
     }
 
@@ -178,8 +186,14 @@ public class MapActivity extends AppCompatActivity
      */
     private void startTrackingService() {
         if (checkPermission()) {
-            String activityType = getIntent().getStringExtra(MyConstants.ACTIVITY_TYPE);
+
             String inputType = getIntent().getStringExtra(MyConstants.INPUT_TYPE);
+            String activityType = getIntent().getStringExtra(MyConstants.ACTIVITY_TYPE);
+
+            // if input Type is automatic, let's detect the Activity Type
+            if (inputType.equals(MyConstants.INPUT_AUTOMATIC)) {
+               activityType = "";
+            }
 
             serviceIntent = new Intent(this, TrackingService.class);
             serviceIntent.putExtra(MyConstants.INPUT_TYPE, inputType);
@@ -200,8 +214,9 @@ public class MapActivity extends AppCompatActivity
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(LocationIntentService.BROADCAST_LOCATION)) {
-                Log.d(TrackingService.TAG, "MapActivity: onReceive(): Thread ID is:" + Thread.currentThread().getId());
+                Log.d(TrackingService.TAG, "MapActivity: onReceive(): MapActivity: Location Recognition Thread ID is:" + Thread.currentThread().getId());
                 mExerciseEntry = intent.getParcelableExtra(MyConstants.CURRENT_EXERCISE);
+                Log.d(TAG, "MapActivity: onReceive(): MapActivity: Location Recognition Exercise is: " + mExerciseEntry.toString());
                 updateMapDisplay(mExerciseEntry);
                 Toast.makeText(MapActivity.this, "Location Received", Toast.LENGTH_SHORT).show();
             }
@@ -209,36 +224,91 @@ public class MapActivity extends AppCompatActivity
     };
 
     /*
-     * Draws the LatLongs in the exercise Entry on the Map and updates the text view
+     * Draws the LatLongs in the exercise Entry on the Map and updates the text views
      */
     private void updateMapDisplay(ExerciseEntry exerciseEntry) {
-        //TODO FetchEntry may be faulty because of JSON latLng issue
-        if (exerciseEntry.getLocationList().isEmpty() ){
+        if (exerciseEntry != null && !exerciseEntry.getLocationList().isEmpty()) {
+            PolylineOptions polylineOptions = new PolylineOptions();
+            for (LatLng latLng : exerciseEntry.getLocationList()) {
+                polylineOptions.add(latLng);
+            }
+
+            // add Polyline to Map and style it
+            Polyline polyline = mMap.addPolyline(polylineOptions);
+            stylePolyline(polyline);
+
+            // set start and end Markers
+            setStartEndMarkers(exerciseEntry);
+
+            // Focus on the last location commented for debugging
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(exerciseEntry.getLocationList()
+                    .get(exerciseEntry.getLocationList().size() - 1), 17));
+
             Log.d(TAG, "updateMapDisplay(): Empty LocationList ");
+        }
+
+
+        // set TextViews depending on the user's unit preferences
+        applyUnitPreferences(exerciseEntry);
+    }
+
+    /*
+     * Called within updateMapDisplay to set Text Views with appropriate units
+     */
+    private void applyUnitPreferences(ExerciseEntry mExerciseEntry) {
+        if (mExerciseEntry == null) {
             return;
         }
+        String mDistanceUnitPrefs = PreferenceManager
+                .getDefaultSharedPreferences(this).getString("unit_preference", "");
 
-        PolylineOptions polylineOptions = new PolylineOptions();
-        for (LatLng latLng : exerciseEntry.getLocationList()) {
-            polylineOptions.add(latLng);
+        Boolean inMiles = mDistanceUnitPrefs.equals(MyConstants.IMPERIAL_MILES);
+
+        String currentDistance = mExerciseEntry.getDistance();
+        String currentClimb = mExerciseEntry.getClimb();
+        String currentCalorie = mExerciseEntry.getCalorie();
+        String currentActivity = mExerciseEntry.getActivityType();
+        String currentAvgSpeed = mExerciseEntry.getAvgSpeed();
+
+
+        if (inMiles){
+            // distance conversion
+            if (currentDistance != null && currentDistance.contains("kms")) {
+
+                currentDistance = currentDistance.replace(" kms", "");
+                DecimalFormat df = new DecimalFormat("####0.00");
+                currentDistance = df.format(Double.parseDouble(currentDistance) / MyConstants.MILE_CONVERSION_RATE);
+
+                // change calorie calculation
+                currentCalorie = df.format(MyConstants.CALORIE_CONSTANT * Double.parseDouble(currentDistance)) + " cals";
+
+                // set distance
+                currentDistance = currentDistance + " miles";
+            }
+
+            // speed conversion
+            if (currentAvgSpeed != null && currentAvgSpeed.contains("km/s")){
+                currentAvgSpeed = currentAvgSpeed.replace(" km/s", "");
+                DecimalFormat df = new DecimalFormat("####0.00");
+                currentAvgSpeed= df.format(Double.parseDouble(currentAvgSpeed) * (1 / MyConstants.MILE_CONVERSION_RATE) );
+                currentAvgSpeed = currentAvgSpeed + " mi/s";
+            }
+
+            // climb conversion
+            if (currentClimb != null && currentClimb.contains("kms")){
+                currentClimb = currentClimb.replace(" kms", "");
+                DecimalFormat df = new DecimalFormat("####0.00");
+                currentClimb = df.format(Double.parseDouble(currentClimb) / MyConstants.MILE_CONVERSION_RATE);
+
+                currentClimb = currentClimb +" mi";
+            }
+
         }
-
-        // add Polyline to Map and style it
-        Polyline polyline = mMap.addPolyline(polylineOptions);
-        stylePolyline(polyline);
-
-        // set start and end Markers
-        setStartEndMarkers(exerciseEntry);
-
-        // Focus on the last location commented for debugging
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(exerciseEntry.getLocationList()
-                .get(exerciseEntry.getLocationList().size() - 1), 17));
-
-        mDistanceView.setText("Distance: "+mExerciseEntry.getDistance());
-        mCalorieView.setText("Calories: "+mExerciseEntry.getCalorie());
-        mClimbView.setText("Climb: "  +mExerciseEntry.getClimb());
-        mAvgSpeedView.setText("Avg speed: "+mExerciseEntry.getAvgSpeed());
-        mActivityView.setText("Activity Type:  "+mExerciseEntry.getActivityType());
+        mDistanceView.setText(MyConstants.Distance + currentDistance);
+        mCalorieView.setText(MyConstants.Calorie + currentCalorie);
+        mClimbView.setText(MyConstants.Climb + currentClimb);
+        mAvgSpeedView.setText(MyConstants.Avg_Speed + currentAvgSpeed);
+        mActivityView.setText(MyConstants.Activity + currentActivity);
 
     }
 
@@ -289,11 +359,17 @@ public class MapActivity extends AppCompatActivity
     BroadcastReceiver mActivityDetectionBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(ActivityIntentService.getActivityRecognition())){
-                Log.d(ActivityIntentService.getActivityRecognition(), "MapActivity: Activity Recognition onReceive(): Thread ID is:" + Thread.currentThread().getId());
+            if (intent.getAction().equals(ActivityIntentService.getActivityRecognition())) {
+                String detectedActivity =  intent.getStringExtra(MyConstants.DETECTED_ACTIVITY);
                 mExerciseEntry = intent.getParcelableExtra(MyConstants.CURRENT_EXERCISE);
-                updateMapDisplay(mExerciseEntry);
-                Toast.makeText(MapActivity.this, "Activity Type Received", Toast.LENGTH_SHORT).show();
+
+                if (mExerciseEntry != null) {
+                    mExerciseEntry.setActivityType(detectedActivity);
+                    updateMapDisplay(mExerciseEntry);
+                    Log.d(TAG, "onReceive(): MapActivity: Activity Recognition Thread ID is:" + Thread.currentThread().getId() + " " + mExerciseEntry.getActivityType());
+                    Log.d(TAG, "MapActivity: onReceive(): MapActivity: Activity Recognition Exercise is: " + mExerciseEntry.toString());
+                    Toast.makeText(MapActivity.this, "Activity Type Received", Toast.LENGTH_SHORT).show();
+                }
             }
 
         }
@@ -442,10 +518,10 @@ public class MapActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mLocationBroadcastReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mActivityDetectionBroadcastReceiver);
         mDataSource.close();
         super.onDestroy();
     }
-
 
 
     /*
@@ -479,8 +555,8 @@ public class MapActivity extends AppCompatActivity
         Log.d(TAG, "onLoadFinished(): Thread ID " + Thread.currentThread().getId());
         if (loader.getId() == MyConstants.FETCH_SINGLE_EXERCISE_ID) {
             if (data.size() > 0) {
-                ExerciseEntry fetchedEntry = data.get(0);
-                updateMapDisplay(fetchedEntry);
+                mExerciseEntry = data.get(0);
+                updateMapDisplay(mExerciseEntry);
             }
         }
     }

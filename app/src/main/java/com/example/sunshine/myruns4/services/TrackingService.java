@@ -12,6 +12,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.preference.PreferenceManager;
 
 import com.example.sunshine.myruns4.MapActivity;
 import com.example.sunshine.myruns4.R;
@@ -27,7 +28,8 @@ import java.time.format.DateTimeFormatter;
 public class TrackingService extends Service {
     public static final String TAG = TrackingService.class.getName();
     private static final int SERVICE_NOTIFICATION_ID = 1;
-    private static final long DETECTION_INTERVAL_IN_MILLISECONDS =5000;
+    private static final long DETECTION_INTERVAL_IN_MILLISECONDS = 5000;
+
     private NotificationManager notificationManger;
     private ExerciseEntry mExerciseEntry;
     private PendingIntent mPendingIntent;
@@ -56,7 +58,16 @@ public class TrackingService extends Service {
         mExerciseEntry.setInputType(inputType);
         mExerciseEntry.setTime(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))); // Record time to fine seconds
         mExerciseEntry.setDate(java.time.LocalDate.now().toString());
-        mExerciseEntry.setDistance("0 kms");
+       
+        String mDistanceUnitPrefs =  PreferenceManager
+                .getDefaultSharedPreferences(this).getString("unit_preference", "");
+
+
+        mExerciseEntry.setDistance(mDistanceUnitPrefs.equals(MyConstants.IMPERIAL_MILES) ? "0 miles" : "0 kms");
+        mExerciseEntry.setCalorie("0 cal");
+        mExerciseEntry.setClimb(mDistanceUnitPrefs.equals(MyConstants.IMPERIAL_MILES) ? "0 mi" : "0 kms");
+        mExerciseEntry.setAvgSpeed(mDistanceUnitPrefs.equals(MyConstants.IMPERIAL_MILES) ? "0 mi/s" : "0 kms/s");
+        mExerciseEntry.setDuration("0 mins"); // start from 0
     }
 
 
@@ -80,18 +91,19 @@ public class TrackingService extends Service {
 
             if (activityType != null) {
                 LocationIntentService.startLocationTracking(TrackingService.this, mExerciseEntry);
-                //ActivityIntentService.startActivityRecognition(TrackingService.this, mExerciseEntry);
 
-                //start up activity recognition
-                mActivityRecognitionClient= new ActivityRecognitionClient(this);
-                Intent mIntentService = new Intent(this, ActivityIntentService.class);
-                Bundle bundle= new Bundle();
-                bundle.putParcelable(MyConstants.CURRENT_EXERCISE,mExerciseEntry);
-                mIntentService.putExtra(MyConstants.CURRENT_EXERCISE,bundle);
-                mIntentService.setAction(ActivityIntentService.getActivityRecognition());
-                mPendingIntent = PendingIntent.getService(this,
-                        1, mIntentService, PendingIntent.FLAG_UPDATE_CURRENT);
-                requestActivityUpdates();
+                //start up activity recognition if we're in automatic mode
+                if (inputType.equals(MyConstants.INPUT_AUTOMATIC)){
+                    mActivityRecognitionClient= new ActivityRecognitionClient(this);
+                    Intent mIntentService = new Intent(this, ActivityIntentService.class);
+                    Bundle bundle= new Bundle();
+                    bundle.putParcelable(MyConstants.CURRENT_EXERCISE, mExerciseEntry);
+                    mIntentService.putExtra(MyConstants.CURRENT_EXERCISE, bundle);
+                    mIntentService.setAction(ActivityIntentService.getActivityRecognition());
+                    mPendingIntent = PendingIntent.getService(this,
+                            1, mIntentService, PendingIntent.FLAG_UPDATE_CURRENT);
+                    requestActivityUpdates();
+                }
             }
         }
         return START_STICKY;
