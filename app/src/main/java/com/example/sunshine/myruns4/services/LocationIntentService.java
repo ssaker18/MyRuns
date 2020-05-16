@@ -2,30 +2,19 @@ package com.example.sunshine.myruns4.services;
 
 import android.app.IntentService;
 import android.content.BroadcastReceiver;
-import android.content.Intent;
 import android.content.Context;
-import android.content.IntentFilter;
-import android.location.Location;
+import android.content.Intent;
 import android.os.Looper;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.preference.PreferenceManager;
 
-import com.example.sunshine.myruns4.MapActivity;
 import com.example.sunshine.myruns4.constants.MyConstants;
 import com.example.sunshine.myruns4.models.ExerciseEntry;
 import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.maps.model.LatLng;
-
-import java.text.DecimalFormat;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
 
@@ -53,20 +42,20 @@ public class LocationIntentService extends IntentService {
         super.onCreate();
         
         // We register a listener here because the exercise parcelabe needs to know activity detection
-       mActivityDetectionBroadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equals(ActivityIntentService.getActivityRecognition())) {
-                    ExerciseEntry entry = intent.getParcelableExtra(MyConstants.CURRENT_EXERCISE);
-                    mCurrExercise.setActivityType(entry.getActivityType());
-                    Log.d(TAG, "onReceive(): MapActivity: Activity Recognition Thread ID is:" + Thread.currentThread().getId() + " " + entry.getActivityType());
-
-                }
-
-            }
-        };
-        LocalBroadcastManager.getInstance(this).registerReceiver(mActivityDetectionBroadcastReceiver,
-                new IntentFilter(ActivityIntentService.getActivityRecognition()));
+//       mActivityDetectionBroadcastReceiver = new BroadcastReceiver() {
+//            @Override
+//            public void onReceive(Context context, Intent intent) {
+//                if (intent.getAction().equals(ActivityIntentService.getActivityRecognition())) {
+//                    ExerciseEntry entry = intent.getParcelableExtra(MyConstants.CURRENT_EXERCISE);
+//                    mCurrExercise.setActivityType(entry.getActivityType());
+//                    Log.d(TAG, "onReceive(): MapActivity: Activity Recognition Thread ID is:" + Thread.currentThread().getId() + " " + entry.getActivityType());
+//
+//                }
+//
+//            }
+//        };
+//        LocalBroadcastManager.getInstance(this).registerReceiver(mActivityDetectionBroadcastReceiver,
+//                new IntentFilter(ActivityIntentService.getActivityRecognition())); // ABUJA
 
         initLocationCallback();
         startLocationUpdates();
@@ -140,9 +129,10 @@ public class LocationIntentService extends IntentService {
                 Log.d(TAG, " onLocationResult(): Thread ID is:" + Thread.currentThread().getId());
                 Log.d(TAG, " onLocationResult(): Location is:" + locationResult.toString());
                 Intent intent = new Intent(BROADCAST_LOCATION);
-                addNewLocationToExercise(locationResult);
-                addMetricsToExercise(locationResult);
-                intent.putExtra(MyConstants.CURRENT_EXERCISE, mCurrExercise);
+               // addNewLocationToExercise(locationResult); // ABUJA
+                // addMetricsToExercise(locationResult, intent); // ABUJA
+//                intent.putExtra(MyConstants.CURRENT_EXERCISE, mCurrExercise); // ABUJA
+                intent.putExtra(MyConstants.LOCATION_LIST, locationResult);
                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
 
             }
@@ -154,91 +144,98 @@ public class LocationIntentService extends IntentService {
             }
         };
     }
-    /*
-     * Helper method to add Metrics like calories, Avg_speed, distance to the current Exercise
-     * Calories is just a rough estimate we multiply distance in meters by 0.06.
-     * To get climb, we subtract start altitude from curr altitude (location.getAltitude)
-     * Average speed is distance travelled divided by duration spent traveling.
-     * We do all the calculations in kilometers and change units when rendering
-     */
-    private void addMetricsToExercise(LocationResult locationResult) {
-        if ( mCurrExercise == null) return;
 
-        DecimalFormat df = new DecimalFormat("####0.00");
-
-        double duration = Float.parseFloat(mCurrExercise.getDuration().substring(0, mCurrExercise.getDuration().indexOf(" ")));
-        double avgSpeed = locationResult.getLastLocation().getSpeed() / (duration == 0 ? 1 : duration);
-        double climb = (locationResult.getLastLocation().getAltitude() - mCurrExercise.getStartAltitude()) / 1000;
-        // we need to convert to km/s since getSpeed returns speed in m/s
-        avgSpeed = avgSpeed / 1000;
-
-        double distance = avgSpeed * duration;
-        String calorie = df.format(MyConstants.CALORIE_CONSTANT * distance) + " cals";
-
-        String sDistance  = df.format(distance) + " kms";
-        String sAvgSpeed = df.format(avgSpeed) + " km/s";
-        String sClimb = df.format(climb) + " kms";
-
-        mCurrExercise.setDistance(sDistance);
-        mCurrExercise.setAvgSpeed(sAvgSpeed);
-        mCurrExercise.setCalorie(calorie);
-        mCurrExercise.setClimb(sClimb);
-    }
-
-    /*
-     * Called in onLocationResult each time a new location is read
-     * We add the new location to the current Exercise's location list
-     */
-    private void addNewLocationToExercise(LocationResult locationResult) {
-        if (mCurrExercise == null){
-            return;
-        }
-        ArrayList<LatLng> oldLocationList = mCurrExercise.getLocationList();
-        double latitude = locationResult.getLastLocation().getLatitude();
-        double longitude = locationResult.getLastLocation().getLongitude();
-        LatLng newLatLng = new LatLng(latitude, longitude);
-
-        ArrayList<LatLng> newLocationList;
-        if (oldLocationList == null) {
-            // very first location received
-            newLocationList = new ArrayList<>();
-            newLocationList.add(newLatLng);
-            mCurrExercise.setLocationList(newLocationList);
-            mCurrExercise.setStartAltitude(locationResult.getLastLocation().getAltitude() / 1000);
-        } else {
-            // multiple locations obtained add on to the end
-            newLocationList = oldLocationList;
-            newLocationList.add(newLatLng);
-            mCurrExercise.setLocationList(newLocationList);
-        }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mActivityDetectionBroadcastReceiver );
-    }
-
-    /*
-     * Captures Duration of exercise entry. We subtract the exercise's
-     * time stamp from the current time and setDuration() on the entry
-     */
-    private void captureDuration() {
-        if (mCurrExercise != null) {
-
-            LocalTime startTime = LocalTime.parse(mCurrExercise.getTime()); //TODO
-            LocalTime now = LocalTime.now();
-
-            long secs = now.getSecond() - startTime.getSecond();
-            long hours = now.getHour() - startTime.getHour();
-            long mins = now.getMinute() - startTime.getMinute();
-
-            // convert everything else to mins
-            mins = mins + hours * 60 + (secs * (1 / 60));
-
-            String duration = mins + " mins";
-            Log.d(TAG, "captureDuration() " + duration);
-            mCurrExercise.setDuration(duration);
-        }
-    }
+//    /*
+//     * Helper method to add Metrics like calories, Avg_speed, distance to the current Exercise
+//     * Calories is just a rough estimate we multiply distance in meters by 0.06.
+//     * To get climb, we subtract start altitude from curr altitude (location.getAltitude)
+//     * Average speed is distance travelled divided by duration spent traveling.
+//     * We do all the calculations in kilometers and change units when rendering
+//     */
+//    private void addMetricsToExercise(LocationResult locationResult, Intent intent) {
+//        if ( mCurrExercise == null) return;
+//
+//        DecimalFormat df = new DecimalFormat("####0.00");
+//
+//        double duration = Float.parseFloat(mCurrExercise.getDuration().substring(0, mCurrExercise.getDuration().indexOf(" ")));
+//        double avgSpeed = locationResult.getLastLocation().getSpeed() / (duration == 0 ? 1 : duration);
+//        double climb = (locationResult.getLastLocation().getAltitude() - mCurrExercise.getStartAltitude()) / 1000;
+//        // we need to convert to km/s since getSpeed returns speed in m/s
+//        avgSpeed = avgSpeed / 1000;
+//
+//        double distance = avgSpeed * duration;
+//        String calorie = df.format(MyConstants.CALORIE_CONSTANT * distance) + " cals";
+//
+//        String sDistance  = df.format(distance) + " kms";
+//        String sAvgSpeed = df.format(avgSpeed) + " km/s";
+//        String sClimb = df.format(climb) + " kms";
+//
+//        mCurrExercise.setDistance(sDistance); // ABUJA
+//        mCurrExercise.setAvgSpeed(sAvgSpeed); // ABUJA
+//        mCurrExercise.setCalorie(calorie); // ABUJA
+//        mCurrExercise.setClimb(sClimb); // ABUJA
+//
+//        intent.putExtra(MyConstants.DISTANCE_DETECTED, sDistance);
+//        intent.putExtra(MyConstants.AVG_SPEED_DETECTED, sAvgSpeed);
+//        intent.putExtra(MyConstants.CALORIES_DETECTED, sClimb);
+//        intent.putExtra(MyConstants.CLIMB_DETECTED, sClimb);
+//
+//    }
+//
+//    /*
+//     * Called in onLocationResult each time a new location is read
+//     * We add the new location to the current Exercise's location list
+//     */
+//    private void addNewLocationToExercise(LocationResult locationResult) {
+//        if (mCurrExercise == null){
+//            return;
+//        }
+//        ArrayList<LatLng> oldLocationList = mCurrExercise.getLocationList();
+//        double latitude = locationResult.getLastLocation().getLatitude();
+//        double longitude = locationResult.getLastLocation().getLongitude();
+//        LatLng newLatLng = new LatLng(latitude, longitude);
+//
+//        ArrayList<LatLng> newLocationList;
+//        if (oldLocationList == null) {
+//            // very first location received
+//            newLocationList = new ArrayList<>();
+//            newLocationList.add(newLatLng);
+//            mCurrExercise.setLocationList(newLocationList);
+//            mCurrExercise.setStartAltitude(locationResult.getLastLocation().getAltitude() / 1000);
+//        } else {
+//            // multiple locations obtained add on to the end
+//            newLocationList = oldLocationList;
+//            newLocationList.add(newLatLng);
+//            mCurrExercise.setLocationList(newLocationList);
+//        }
+//    }
+//
+//    @Override
+//    public void onDestroy() {
+//        super.onDestroy();
+//        LocalBroadcastManager.getInstance(this).unregisterReceiver(mActivityDetectionBroadcastReceiver );
+//    }
+//
+//    /*
+//     * Captures Duration of exercise entry. We subtract the exercise's
+//     * time stamp from the current time and setDuration() on the entry
+//     */
+//    private void captureDuration() {
+//        if (mCurrExercise != null) {
+//
+//            LocalTime startTime = LocalTime.parse(mCurrExercise.getTime()); //TODO
+//            LocalTime now = LocalTime.now();
+//
+//            long secs = now.getSecond() - startTime.getSecond();
+//            long hours = now.getHour() - startTime.getHour();
+//            long mins = now.getMinute() - startTime.getMinute();
+//
+//            // convert everything else to mins
+//            mins = mins + hours * 60 + (secs * (1 / 60));
+//
+//            String duration = mins + " mins";
+//            Log.d(TAG, "captureDuration() " + duration);
+//            mCurrExercise.setDuration(duration);
+//        }
+//    }
 }

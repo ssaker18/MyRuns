@@ -42,4 +42,13 @@ public class MyConstants {
     public static final double MILE_CONVERSION_RATE =  1.609 ;
     public static final double CALORIE_CONSTANT = 0.06;
 
+    /* Raw data shared among Intent Services*/
+    public static final String LOCATION_LIST = "location_list";
+    public static final String DISTANCE_DETECTED = "distance_detected";
+    public static final String AVG_SPEED_DETECTED = "speed_detected";
+    public static final String CALORIES_DETECTED = "calories_detected";
+    public static final String CLIMB_DETECTED = "climb_detected";
+
+
+
 }

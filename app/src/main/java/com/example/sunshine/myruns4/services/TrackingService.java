@@ -31,7 +31,7 @@ public class TrackingService extends Service {
     private static final long DETECTION_INTERVAL_IN_MILLISECONDS = 5000;
 
     private NotificationManager notificationManger;
-    private ExerciseEntry mExerciseEntry;
+    private ExerciseEntry mExerciseEntry; // ABUJA
     private PendingIntent mPendingIntent;
     private ActivityRecognitionClient mActivityRecognitionClient;
 
@@ -52,23 +52,23 @@ public class TrackingService extends Service {
      * Initialises an exercise entry with Activity and InputType
      * Also date and Time since these are required fields in the DB schema
      */
-    private void initExerciseEntry(String activityType, String inputType) {
-        mExerciseEntry = new ExerciseEntry();
-        mExerciseEntry.setActivityType(activityType);
-        mExerciseEntry.setInputType(inputType);
-        mExerciseEntry.setTime(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))); // Record time to fine seconds
-        mExerciseEntry.setDate(java.time.LocalDate.now().toString());
-       
-        String mDistanceUnitPrefs =  PreferenceManager
-                .getDefaultSharedPreferences(this).getString("unit_preference", "");
-
-
-        mExerciseEntry.setDistance(mDistanceUnitPrefs.equals(MyConstants.IMPERIAL_MILES) ? "0 miles" : "0 kms");
-        mExerciseEntry.setCalorie("0 cal");
-        mExerciseEntry.setClimb(mDistanceUnitPrefs.equals(MyConstants.IMPERIAL_MILES) ? "0 mi" : "0 kms");
-        mExerciseEntry.setAvgSpeed(mDistanceUnitPrefs.equals(MyConstants.IMPERIAL_MILES) ? "0 mi/s" : "0 kms/s");
-        mExerciseEntry.setDuration("0 mins"); // start from 0
-    }
+//    private void initExerciseEntry(String activityType, String inputType) { // ABUJA
+//        mExerciseEntry = new ExerciseEntry();
+//        mExerciseEntry.setActivityType(activityType);
+//        mExerciseEntry.setInputType(inputType);
+//        mExerciseEntry.setTime(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))); // Record time to fine seconds
+//        mExerciseEntry.setDate(java.time.LocalDate.now().toString());
+//
+//        String mDistanceUnitPrefs =  PreferenceManager
+//                .getDefaultSharedPreferences(this).getString("unit_preference", "");
+//
+//
+//        mExerciseEntry.setDistance(mDistanceUnitPrefs.equals(MyConstants.IMPERIAL_MILES) ? "0 miles" : "0 kms");
+//        mExerciseEntry.setCalorie("0 cal");
+//        mExerciseEntry.setClimb(mDistanceUnitPrefs.equals(MyConstants.IMPERIAL_MILES) ? "0 mi" : "0 kms");
+//        mExerciseEntry.setAvgSpeed(mDistanceUnitPrefs.equals(MyConstants.IMPERIAL_MILES) ? "0 mi/s" : "0 kms/s");
+//        mExerciseEntry.setDuration("0 mins"); // start from 0
+//    }
 
 
     /*
@@ -86,19 +86,19 @@ public class TrackingService extends Service {
             String activityType = intent.getStringExtra(MyConstants.ACTIVITY_TYPE);
             String inputType = intent.getStringExtra(MyConstants.INPUT_TYPE);
 
-            // set up exercise Entry
-            initExerciseEntry(activityType, inputType);
+//            // set up exercise Entry
+//            initExerciseEntry(activityType, inputType); //ABUJA
 
             if (activityType != null) {
-                LocationIntentService.startLocationTracking(TrackingService.this, mExerciseEntry);
+                LocationIntentService.startLocationTracking(TrackingService.this, mExerciseEntry); // Modify
 
                 //start up activity recognition if we're in automatic mode
                 if (inputType.equals(MyConstants.INPUT_AUTOMATIC)){
                     mActivityRecognitionClient= new ActivityRecognitionClient(this);
                     Intent mIntentService = new Intent(this, ActivityIntentService.class);
-                    Bundle bundle= new Bundle();
-                    bundle.putParcelable(MyConstants.CURRENT_EXERCISE, mExerciseEntry);
-                    mIntentService.putExtra(MyConstants.CURRENT_EXERCISE, bundle);
+//                    Bundle bundle= new Bundle(); // ABUJA
+//                    bundle.putParcelable(MyConstants.CURRENT_EXERCISE, mExerciseEntry); //ABUJA
+//                    mIntentService.putExtra(MyConstants.CURRENT_EXERCISE, bundle); //ABUJA
                     mIntentService.setAction(ActivityIntentService.getActivityRecognition());
                     mPendingIntent = PendingIntent.getService(this,
                             1, mIntentService, PendingIntent.FLAG_UPDATE_CURRENT);

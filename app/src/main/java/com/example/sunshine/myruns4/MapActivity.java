@@ -35,6 +35,7 @@ import com.example.sunshine.myruns4.models.ExerciseEntry;
 import com.example.sunshine.myruns4.services.ActivityIntentService;
 import com.example.sunshine.myruns4.services.LocationIntentService;
 import com.example.sunshine.myruns4.services.TrackingService;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -50,6 +51,7 @@ import com.google.android.gms.maps.model.RoundCap;
 
 import java.text.DecimalFormat;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 
@@ -71,6 +73,8 @@ public class MapActivity extends AppCompatActivity
     private TextView mClimbView;
     private TextView mCalorieView;
     private TextView mDistanceView;
+    private String mActivityType;
+    private String mInputType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +86,8 @@ public class MapActivity extends AppCompatActivity
         mClimbView = findViewById(R.id.climb);
         mCalorieView = findViewById(R.id.calorie);
         mDistanceView = findViewById(R.id.distance);
+
+
 
         // set up action bar
         setUpActionBar();
@@ -101,7 +107,15 @@ public class MapActivity extends AppCompatActivity
         Intent entry = getIntent();
         if (entry != null) {
             mEntryPoint = entry.getStringExtra(MyConstants.SOURCE);
+            mActivityType = entry.getStringExtra(MyConstants.ACTIVITY_TYPE);
+            mInputType = entry.getStringExtra(MyConstants.INPUT_TYPE);
+
             if (mEntryPoint != null) {
+                if (savedInstanceState != null){
+                    mExerciseEntry = savedInstanceState.getParcelable(MyConstants.CURRENT_EXERCISE);
+                }else{
+                    initExerciseEntry(mActivityType, mInputType);
+                }
                 switch (mEntryPoint) {
                     case HistoryFragment.FRAGMENT_NAME:
                         // start AsyncTaskLoader to fetch the data from the DB
@@ -118,6 +132,14 @@ public class MapActivity extends AppCompatActivity
         }
 
         Log.d(TAG, "onCreate()");
+    }
+
+    /* handle save instance state */
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putParcelable(MyConstants.CURRENT_EXERCISE, mExerciseEntry);
+        super.onSaveInstanceState(outState);
     }
 
     /*
@@ -215,7 +237,9 @@ public class MapActivity extends AppCompatActivity
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(LocationIntentService.BROADCAST_LOCATION)) {
                 Log.d(TrackingService.TAG, "MapActivity: onReceive(): MapActivity: Location Recognition Thread ID is:" + Thread.currentThread().getId());
-                mExerciseEntry = intent.getParcelableExtra(MyConstants.CURRENT_EXERCISE);
+                // mExerciseEntry = intent.getParcelableExtra(MyConstants.CURRENT_EXERCISE); // ABUJA
+                addNewLocationToExercise(intent);
+                addMetricsToExercise(intent);
                 Log.d(TAG, "MapActivity: onReceive(): MapActivity: Location Recognition Exercise is: " + mExerciseEntry.toString());
                 updateMapDisplay(mExerciseEntry);
                 Toast.makeText(MapActivity.this, "Location Received", Toast.LENGTH_SHORT).show();
@@ -230,26 +254,33 @@ public class MapActivity extends AppCompatActivity
         if (exerciseEntry != null && !exerciseEntry.getLocationList().isEmpty()) {
             PolylineOptions polylineOptions = new PolylineOptions();
             for (LatLng latLng : exerciseEntry.getLocationList()) {
-                polylineOptions.add(latLng);
+                if (latLng != null){
+                    polylineOptions.add(latLng); // sometimes throws error may be earlier test cases
+                }
             }
 
             // add Polyline to Map and style it
-            Polyline polyline = mMap.addPolyline(polylineOptions);
-            stylePolyline(polyline);
+            if (mMap != null ){
+                if (polylineOptions != null){
+                    Polyline polyline = mMap.addPolyline(polylineOptions);
+                    stylePolyline(polyline);
+                }
 
-            // set start and end Markers
-            setStartEndMarkers(exerciseEntry);
+                // set start and end Markers
+                setStartEndMarkers(exerciseEntry);
 
-            // Focus on the last location commented for debugging
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(exerciseEntry.getLocationList()
-                    .get(exerciseEntry.getLocationList().size() - 1), 17));
+                // Focus on the last location commented for debugging
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(exerciseEntry.getLocationList()
+                        .get(exerciseEntry.getLocationList().size() - 1), 17)); // exceptional null case with latlngs
 
-            Log.d(TAG, "updateMapDisplay(): Empty LocationList ");
-        }
+                Log.d(TAG, "updateMapDisplay(): Empty LocationList ");
+            }
 
 
-        // set TextViews depending on the user's unit preferences
-        applyUnitPreferences(exerciseEntry);
+            // set TextViews depending on the user's unit preferences
+            applyUnitPreferences(exerciseEntry);
+            }
+
     }
 
     /*
@@ -322,6 +353,9 @@ public class MapActivity extends AppCompatActivity
                 LatLng firstPosition = locationList.get(0);
                 LatLng lastPosition = locationList.get(locationList.size() - 1);
 
+                if (firstPosition == null || lastPosition == null){
+                    return;
+                }
                 if (mFirstMarker == null) {
                     mFirstMarker = mMap.addMarker(new MarkerOptions()
                             .position(firstPosition)
@@ -346,6 +380,7 @@ public class MapActivity extends AppCompatActivity
      * Set Custom styling for polyline of Map
      */
     private void stylePolyline(Polyline polyline) {
+        if (polyline == null) return;
         polyline.setStartCap(new RoundCap());
         polyline.setEndCap(new RoundCap());
         polyline.setWidth(MyConstants.POLYLINE_STROKE_WIDTH_PX);
@@ -361,7 +396,7 @@ public class MapActivity extends AppCompatActivity
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(ActivityIntentService.getActivityRecognition())) {
                 String detectedActivity =  intent.getStringExtra(MyConstants.DETECTED_ACTIVITY);
-                mExerciseEntry = intent.getParcelableExtra(MyConstants.CURRENT_EXERCISE);
+                // mExerciseEntry = intent.getParcelableExtra(MyConstants.CURRENT_EXERCISE); // ABUJA
 
                 if (mExerciseEntry != null) {
                     mExerciseEntry.setActivityType(detectedActivity);
@@ -567,5 +602,85 @@ public class MapActivity extends AppCompatActivity
     @Override
     public void onLoaderReset(@NonNull Loader<ArrayList<ExerciseEntry>> loader) {
     }
+
+
+    /* *********************** ADDED CODE *********************/
+    /*
+     * Initialises an exercise entry with Activity and InputType
+     * Also date and Time since these are required fields in the DB schema
+     */
+    private void initExerciseEntry(String activityType, String inputType) {
+        mExerciseEntry = new ExerciseEntry();
+        mExerciseEntry.setActivityType(activityType);
+        mExerciseEntry.setInputType(inputType);
+        mExerciseEntry.setTime(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))); // Record time to fine seconds
+        mExerciseEntry.setDate(java.time.LocalDate.now().toString());
+
+        String mDistanceUnitPrefs =  PreferenceManager
+                .getDefaultSharedPreferences(this).getString("unit_preference", "");
+
+
+        mExerciseEntry.setDistance(mDistanceUnitPrefs.equals(MyConstants.IMPERIAL_MILES) ? "0 miles" : "0 kms");
+        mExerciseEntry.setCalorie("0 cal");
+        mExerciseEntry.setClimb(mDistanceUnitPrefs.equals(MyConstants.IMPERIAL_MILES) ? "0 mi" : "0 kms");
+        mExerciseEntry.setAvgSpeed(mDistanceUnitPrefs.equals(MyConstants.IMPERIAL_MILES) ? "0 mi/s" : "0 kms/s");
+        mExerciseEntry.setDuration("0 mins"); // start from 0
+    }
+
+    private void addMetricsToExercise(Intent intent) {
+        if (mExerciseEntry == null || intent == null) return;
+        LocationResult locationResult = intent.getParcelableExtra(MyConstants.LOCATION_LIST);
+        DecimalFormat df = new DecimalFormat("####0.00");
+
+        double duration = Float.parseFloat(mExerciseEntry.getDuration().substring(0, mExerciseEntry.getDuration().indexOf(" ")));
+        double avgSpeed = locationResult.getLastLocation().getSpeed() / (duration == 0 ? 1 : duration);
+        double climb = (locationResult.getLastLocation().getAltitude() - mExerciseEntry.getStartAltitude()) / 1000;
+        // we need to convert to km/s since getSpeed returns speed in m/s
+        avgSpeed = avgSpeed / 1000;
+
+        double distance = avgSpeed * duration;
+        String calorie = df.format(MyConstants.CALORIE_CONSTANT * distance) + " cals";
+
+        String sDistance  = df.format(distance) + " kms";
+        String sAvgSpeed = df.format(avgSpeed) + " km/s";
+        String sClimb = df.format(climb) + " kms";
+
+        mExerciseEntry.setDistance(sDistance);
+        mExerciseEntry.setAvgSpeed(sAvgSpeed);
+        mExerciseEntry.setCalorie(calorie);
+        mExerciseEntry.setClimb(sClimb);
+    }
+
+    /*
+     * Called in onLocationResult each time a new location is read
+     * We add the new location to the current Exercise's location list
+     */
+    private void addNewLocationToExercise(Intent intent) {
+        if (mExerciseEntry == null || intent  == null){
+            return;
+        }
+
+        LocationResult locationResult = intent.getParcelableExtra(MyConstants.LOCATION_LIST);
+
+        ArrayList<LatLng> oldLocationList = mExerciseEntry.getLocationList();
+        double latitude = locationResult.getLastLocation().getLatitude();
+        double longitude = locationResult.getLastLocation().getLongitude();
+        LatLng newLatLng = new LatLng(latitude, longitude);
+
+        ArrayList<LatLng> newLocationList;
+        if (oldLocationList == null) {
+            // very first location received
+            newLocationList = new ArrayList<>();
+            newLocationList.add(newLatLng);
+            mExerciseEntry.setLocationList(newLocationList);
+            mExerciseEntry.setStartAltitude(locationResult.getLastLocation().getAltitude() / 1000);
+        } else {
+            // multiple locations obtained add on to the end
+            newLocationList = oldLocationList;
+            newLocationList.add(newLatLng);
+            mExerciseEntry.setLocationList(newLocationList);
+        }
+    }
+
 }
 
