@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -63,12 +64,22 @@ public class MapActivity extends AppCompatActivity
     private ExerciseEntry mExerciseEntry;
     private String mEntryPoint;
 
+    private TextView mActivityView;
+    private TextView mAvgSpeedView;
+    private TextView mClimbView;
+    private TextView mCalorieView;
+    private TextView mDistanceView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
+        mActivityView = findViewById(R.id.activity);
+        mAvgSpeedView = findViewById(R.id.avg_speed);
+        mClimbView = findViewById(R.id.climb);
+        mCalorieView = findViewById(R.id.calorie);
+        mDistanceView = findViewById(R.id.distance);
         // set up action bar
         setUpActionBar();
 
@@ -114,7 +125,7 @@ public class MapActivity extends AppCompatActivity
                 new IntentFilter(LocationIntentService.BROADCAST_LOCATION));
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mActivityDetectionBroadcastReceiver,
-                new IntentFilter(LocationIntentService.BROADCAST_ACTIVITY));
+                new IntentFilter(ActivityIntentService.getActivityRecognition()));
         Log.d(TAG, "registerBroadcastReceivers()");
 
     }
@@ -222,6 +233,13 @@ public class MapActivity extends AppCompatActivity
         // Focus on the last location commented for debugging
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(exerciseEntry.getLocationList()
                 .get(exerciseEntry.getLocationList().size() - 1), 17));
+
+        mDistanceView.setText("Distance: "+mExerciseEntry.getDistance());
+        mCalorieView.setText("Calories: "+mExerciseEntry.getCalorie());
+        mClimbView.setText("Climb: "  +mExerciseEntry.getClimb());
+        mAvgSpeedView.setText("Avg speed: "+mExerciseEntry.getAvgSpeed());
+        mActivityView.setText("Activity Type:  "+mExerciseEntry.getActivityType());
+
     }
 
     /*
@@ -271,9 +289,13 @@ public class MapActivity extends AppCompatActivity
     BroadcastReceiver mActivityDetectionBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(LocationIntentService.BROADCAST_ACTIVITY)) {
-                Log.d(TrackingService.TAG, "MapActivity: onReceive(): Thread ID is:" + Thread.currentThread().getId());
+            if (intent.getAction().equals(ActivityIntentService.getActivityRecognition())){
+                Log.d(ActivityIntentService.getActivityRecognition(), "MapActivity: Activity Recognition onReceive(): Thread ID is:" + Thread.currentThread().getId());
+                mExerciseEntry = intent.getParcelableExtra(MyConstants.CURRENT_EXERCISE);
+                updateMapDisplay(mExerciseEntry);
+                Toast.makeText(MapActivity.this, "Activity Type Received", Toast.LENGTH_SHORT).show();
             }
+
         }
     };
 
