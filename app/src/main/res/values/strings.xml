@@ -34,5 +34,10 @@
     <string name="delete">DELETE</string>
     <string name="save_exercise_sucess">Saved Exercise!</string>
     <string name="map">Map</string>
+    <string name="ActivityType">Hello World</string>
+    <string name="Climb">TextView</string>
+    <string name="avg_speed">TextView</string>
+    <string name="distance">TextView</string>
+    <string name="calorie">TextView</string>
 
 </resources>

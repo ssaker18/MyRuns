@@ -22,6 +22,7 @@ public class ExerciseInsertTask extends AsyncTask<ExerciseEntry, Void, Void> {
         super();
         this.context = context;
         this.dataSource = db;
+        this.dataSource.open();
     }
 
     @Override

@@ -7,7 +7,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -16,20 +15,16 @@ import androidx.annotation.Nullable;
 import com.example.sunshine.myruns4.MapActivity;
 import com.example.sunshine.myruns4.R;
 import com.example.sunshine.myruns4.constants.MyConstants;
-import com.example.sunshine.myruns4.models.ExerciseEntry;
 import com.google.android.gms.location.ActivityRecognitionClient;
 import com.google.android.gms.tasks.Task;
-
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 
 
 public class TrackingService extends Service {
     public static final String TAG = TrackingService.class.getName();
     private static final int SERVICE_NOTIFICATION_ID = 1;
-    private static final long DETECTION_INTERVAL_IN_MILLISECONDS =5000;
+    private static final long DETECTION_INTERVAL_IN_MILLISECONDS = 5000;
+
     private NotificationManager notificationManger;
-    private ExerciseEntry mExerciseEntry;
     private PendingIntent mPendingIntent;
     private ActivityRecognitionClient mActivityRecognitionClient;
 
@@ -47,20 +42,6 @@ public class TrackingService extends Service {
     }
 
     /*
-     * Initialises an exercise entry with Activity and InputType
-     * Also date and Time since these are required fields in the DB schema
-     */
-    private void initExerciseEntry(String activityType, String inputType) {
-        mExerciseEntry = new ExerciseEntry();
-        mExerciseEntry.setActivityType(activityType);
-        mExerciseEntry.setInputType(inputType);
-        mExerciseEntry.setTime(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))); // Record time to fine seconds
-        mExerciseEntry.setDate(java.time.LocalDate.now().toString());
-        mExerciseEntry.setDistance("0 kms");
-    }
-
-
-    /*
      * Called from the Map Activity when Tracking Service is requested
      * We first notify the user of location tracking
      * Next, depending on the Activity Type and Input Type we call the appropriate
@@ -75,23 +56,18 @@ public class TrackingService extends Service {
             String activityType = intent.getStringExtra(MyConstants.ACTIVITY_TYPE);
             String inputType = intent.getStringExtra(MyConstants.INPUT_TYPE);
 
-            // set up exercise Entry
-            initExerciseEntry(activityType, inputType);
-
             if (activityType != null) {
-                LocationIntentService.startLocationTracking(TrackingService.this, mExerciseEntry);
-                //ActivityIntentService.startActivityRecognition(TrackingService.this, mExerciseEntry);
+                LocationIntentService.startLocationTracking(TrackingService.this);
 
-                //start up activity recognition
-                mActivityRecognitionClient= new ActivityRecognitionClient(this);
-                Intent mIntentService = new Intent(this, ActivityIntentService.class);
-                Bundle bundle= new Bundle();
-                bundle.putParcelable(MyConstants.CURRENT_EXERCISE,mExerciseEntry);
-                mIntentService.putExtra(MyConstants.CURRENT_EXERCISE,bundle);
-                mIntentService.setAction(ActivityIntentService.getActivityRecognition());
-                mPendingIntent = PendingIntent.getService(this,
-                        1, mIntentService, PendingIntent.FLAG_UPDATE_CURRENT);
-                requestActivityUpdates();
+                //start up activity recognition if we're in automatic mode
+                if (inputType != null && inputType.equals(MyConstants.INPUT_AUTOMATIC)){
+                    mActivityRecognitionClient = new ActivityRecognitionClient(this);
+                    Intent mIntentService = new Intent(this, ActivityIntentService.class);
+                    mIntentService.setAction(ActivityIntentService.getActivityRecognition());
+                    mPendingIntent = PendingIntent.getService(this,
+                            1, mIntentService, PendingIntent.FLAG_UPDATE_CURRENT);
+                    requestActivityUpdates();
+                }
             }
         }
         return START_STICKY;

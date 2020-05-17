@@ -14,7 +14,6 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -54,8 +53,6 @@ public class ManualEntryActivity extends AppCompatActivity
     private static final String EXERCISE_ENTRY_ID = "id";
     private static final String TAG = "ManualEntryActivity";
     private static final int FETCH_SINGLE_EXERCISE_ID = 1;
-    public static final double MILE_CONVERSION_RATE = 1.609;
-    public static final String IMPERIAL_MILES = "Imperial (Miles)";
 
     public String SOURCE = "Source";
 
@@ -148,9 +145,9 @@ public class ManualEntryActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onPause() {
+    protected void onDestroy() {
         mDataSource.close();
-        super.onPause();
+        super.onDestroy();
     }
 
 
@@ -213,7 +210,7 @@ public class ManualEntryActivity extends AppCompatActivity
                 case "Distance":
 
                     showEditDialog(title, position,
-                            mDistanceUnitPrefs.equals(IMPERIAL_MILES) ? "miles" : "kms");
+                            mDistanceUnitPrefs.equals(MyConstants.IMPERIAL_MILES) ? "miles" : "kms");
                     break;
                 case "Calorie":
                     showEditDialog(title, position, "cals");
@@ -327,7 +324,7 @@ public class ManualEntryActivity extends AppCompatActivity
             mItems.add(new ManualEntryModel("Duration",
                     "0 mins"));
             mItems.add(new ManualEntryModel("Distance",
-                    mDistanceUnitPrefs.equals(IMPERIAL_MILES) ? "0 miles" : "0 kms"));
+                    mDistanceUnitPrefs.equals(MyConstants.IMPERIAL_MILES) ? "0 miles" : "0 kms"));
             mItems.add(new ManualEntryModel("Calorie",
                     "0 cals"));
             mItems.add(new ManualEntryModel("Heartbeat", "0 bpm"));
@@ -339,12 +336,12 @@ public class ManualEntryActivity extends AppCompatActivity
             mItems.add(new ManualEntryModel("Duration", entry.getDuration()));
 
             String distance = entry.getDistance();
-            if (mDistanceUnitPrefs.equals(IMPERIAL_MILES)) {
+            if (mDistanceUnitPrefs.equals(MyConstants.IMPERIAL_MILES)) {
                 if (distance.contains("kms")) {
                     distance = distance.replace(" kms", "");
                     DecimalFormat df = new DecimalFormat("####0.00");
 
-                    distance = df.format(Double.parseDouble(distance) / MILE_CONVERSION_RATE);
+                    distance = df.format(Double.parseDouble(distance) / MyConstants.MILE_CONVERSION_RATE);
                     distance = distance + " miles";
                     entry.setDistance(distance);
                 }
@@ -353,7 +350,7 @@ public class ManualEntryActivity extends AppCompatActivity
                     distance = distance.replace(" miles", "");
                     DecimalFormat df = new DecimalFormat("####0.00");
 
-                    distance = df.format(Double.parseDouble(distance) * MILE_CONVERSION_RATE);
+                    distance = df.format(Double.parseDouble(distance) * MyConstants.MILE_CONVERSION_RATE);
                     distance = distance + " kms";
                     entry.setDistance(distance);
                 }
