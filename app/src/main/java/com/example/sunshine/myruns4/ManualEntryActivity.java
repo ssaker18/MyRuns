@@ -145,9 +145,9 @@ public class ManualEntryActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onPause() {
+    protected void onDestroy() {
         mDataSource.close();
-        super.onPause();
+        super.onDestroy();
     }
 
 

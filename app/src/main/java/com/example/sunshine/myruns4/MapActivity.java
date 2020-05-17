@@ -149,7 +149,7 @@ public class MapActivity extends AppCompatActivity
         LocalBroadcastManager.getInstance(this).registerReceiver(mLocationBroadcastReceiver,
                 new IntentFilter(LocationIntentService.BROADCAST_LOCATION));
 
-        // register an activity detectection listener only if we're in Automatic Mode
+        // register an activity detection listener only if we're in Automatic Mode
         String inputMode = entry.getStringExtra(MyConstants.INPUT_TYPE);
         if (inputMode.equals(MyConstants.INPUT_AUTOMATIC)) {
             LocalBroadcastManager.getInstance(this).registerReceiver(mActivityDetectionBroadcastReceiver,
@@ -193,7 +193,7 @@ public class MapActivity extends AppCompatActivity
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            if (mEntryPoint.equals(MainActivity.ACTIVITY_NAME)) {
+            if (mEntryPoint.equals(StartFragment.FRAGMENT_NAME)) {
                 startTrackingService();
             }
         } else {

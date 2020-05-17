@@ -41,6 +41,7 @@ public class ExerciseDataSource {
      * opens the database for writing and reading exercises
      */
     public void open() throws SQLException {
+        Log.d(TAG, "open()");
         db = dbHelper.getWritableDatabase();
     }
 

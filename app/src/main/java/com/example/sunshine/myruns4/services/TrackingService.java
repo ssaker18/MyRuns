@@ -94,7 +94,7 @@ public class TrackingService extends Service {
 
                 //start up activity recognition if we're in automatic mode
                 if (inputType.equals(MyConstants.INPUT_AUTOMATIC)){
-                    mActivityRecognitionClient= new ActivityRecognitionClient(this);
+                    mActivityRecognitionClient = new ActivityRecognitionClient(this);
                     Intent mIntentService = new Intent(this, ActivityIntentService.class);
 //                    Bundle bundle= new Bundle(); // ABUJA
 //                    bundle.putParcelable(MyConstants.CURRENT_EXERCISE, mExerciseEntry); //ABUJA
