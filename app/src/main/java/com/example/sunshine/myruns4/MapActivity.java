@@ -60,8 +60,6 @@ public class MapActivity extends AppCompatActivity
 
     private static final String TAG = MapActivity.class.getName();
     private GoogleMap mMap;
-    private int PERMISSION_REQUEST_CODE = 1;
-    private Intent serviceIntent;
     private ExerciseDataSource mDataSource;
     private Marker mFirstMarker, mLastMarker;
     private DeleteExerciseTask mDeleteTask;
@@ -135,7 +133,6 @@ public class MapActivity extends AppCompatActivity
     }
 
     /* handle save instance state */
-
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putParcelable(MyConstants.CURRENT_EXERCISE, mExerciseEntry);
@@ -151,7 +148,7 @@ public class MapActivity extends AppCompatActivity
 
         // register an activity detection listener only if we're in Automatic Mode
         String inputMode = entry.getStringExtra(MyConstants.INPUT_TYPE);
-        if (inputMode.equals(MyConstants.INPUT_AUTOMATIC)) {
+        if (inputMode != null && inputMode.equals(MyConstants.INPUT_AUTOMATIC)) {
             LocalBroadcastManager.getInstance(this).registerReceiver(mActivityDetectionBroadcastReceiver,
                     new IntentFilter(ActivityIntentService.getActivityRecognition()));
             Log.d(TAG, "registerBroadcastReceivers()");
@@ -162,7 +159,6 @@ public class MapActivity extends AppCompatActivity
      * Sets up Action Bar with back button and title
      */
     private void setUpActionBar() {
-        // Set up action bar with back button
         ActionBar actionBar = getSupportActionBar();
         assert actionBar != null;
         actionBar.setHomeButtonEnabled(true);
@@ -213,11 +209,11 @@ public class MapActivity extends AppCompatActivity
             String activityType = getIntent().getStringExtra(MyConstants.ACTIVITY_TYPE);
 
             // if input Type is automatic, let's detect the Activity Type
-            if (inputType.equals(MyConstants.INPUT_AUTOMATIC)) {
+            if (inputType != null && inputType.equals(MyConstants.INPUT_AUTOMATIC)) {
                activityType = "";
             }
 
-            serviceIntent = new Intent(this, TrackingService.class);
+            Intent serviceIntent = new Intent(this, TrackingService.class);
             serviceIntent.putExtra(MyConstants.INPUT_TYPE, inputType);
             serviceIntent.putExtra(MyConstants.ACTIVITY_TYPE, activityType);
 
@@ -225,7 +221,7 @@ public class MapActivity extends AppCompatActivity
         } else {
             // Request Permissions
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    PERMISSION_REQUEST_CODE);
+                    MyConstants.PERMISSION_REQUEST_CODE);
         }
     }
 
@@ -235,9 +231,9 @@ public class MapActivity extends AppCompatActivity
     BroadcastReceiver mLocationBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(LocationIntentService.BROADCAST_LOCATION)) {
+            String intentAction = intent.getAction();
+            if (intentAction != null && intentAction.equals(LocationIntentService.BROADCAST_LOCATION)) {
                 Log.d(TrackingService.TAG, "MapActivity: onReceive(): MapActivity: Location Recognition Thread ID is:" + Thread.currentThread().getId());
-                // mExerciseEntry = intent.getParcelableExtra(MyConstants.CURRENT_EXERCISE); // ABUJA
                 addNewLocationToExercise(intent);
                 addMetricsToExercise(intent);
                 Log.d(TAG, "MapActivity: onReceive(): MapActivity: Location Recognition Exercise is: " + mExerciseEntry.toString());
@@ -255,7 +251,7 @@ public class MapActivity extends AppCompatActivity
             PolylineOptions polylineOptions = new PolylineOptions();
             for (LatLng latLng : exerciseEntry.getLocationList()) {
                 if (latLng != null){
-                    polylineOptions.add(latLng); // sometimes throws error may be earlier test cases
+                    polylineOptions.add(latLng);
                 }
             }
 
@@ -293,7 +289,7 @@ public class MapActivity extends AppCompatActivity
         String mDistanceUnitPrefs = PreferenceManager
                 .getDefaultSharedPreferences(this).getString("unit_preference", "");
 
-        Boolean inMiles = mDistanceUnitPrefs.equals(MyConstants.IMPERIAL_MILES);
+        boolean inMiles = mDistanceUnitPrefs.equals(MyConstants.IMPERIAL_MILES);
 
         String currentDistance = mExerciseEntry.getDistance();
         String currentClimb = mExerciseEntry.getClimb();
@@ -394,10 +390,9 @@ public class MapActivity extends AppCompatActivity
     BroadcastReceiver mActivityDetectionBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(ActivityIntentService.getActivityRecognition())) {
+            String intentAction = intent.getAction();
+            if (intentAction != null && intent.getAction().equals(ActivityIntentService.getActivityRecognition())) {
                 String detectedActivity =  intent.getStringExtra(MyConstants.DETECTED_ACTIVITY);
-                // mExerciseEntry = intent.getParcelableExtra(MyConstants.CURRENT_EXERCISE); // ABUJA
-
                 if (mExerciseEntry != null) {
                     mExerciseEntry.setActivityType(detectedActivity);
                     updateMapDisplay(mExerciseEntry);
@@ -571,7 +566,8 @@ public class MapActivity extends AppCompatActivity
             if (intent != null) {
                 Long exerciseID = intent.getLongExtra(MyConstants.EXERCISE_ENTRY_ID, -1);
                 if (exerciseID > -1) {
-                    return new ExerciseListLoader(MapActivity.this, exerciseID);
+                    ExerciseListLoader exerciseListLoader = new ExerciseListLoader(MapActivity.this, exerciseID);
+                    return exerciseListLoader;
                 } else {
                     Log.d(TAG, "Invalid Exercise ID - Non-null intent");
                 }
@@ -604,7 +600,6 @@ public class MapActivity extends AppCompatActivity
     }
 
 
-    /* *********************** ADDED CODE *********************/
     /*
      * Initialises an exercise entry with Activity and InputType
      * Also date and Time since these are required fields in the DB schema
@@ -630,25 +625,27 @@ public class MapActivity extends AppCompatActivity
     private void addMetricsToExercise(Intent intent) {
         if (mExerciseEntry == null || intent == null) return;
         LocationResult locationResult = intent.getParcelableExtra(MyConstants.LOCATION_LIST);
-        DecimalFormat df = new DecimalFormat("####0.00");
+        if (locationResult != null){
+            DecimalFormat df = new DecimalFormat("####0.00");
 
-        double duration = Float.parseFloat(mExerciseEntry.getDuration().substring(0, mExerciseEntry.getDuration().indexOf(" ")));
-        double avgSpeed = locationResult.getLastLocation().getSpeed() / (duration == 0 ? 1 : duration);
-        double climb = (locationResult.getLastLocation().getAltitude() - mExerciseEntry.getStartAltitude()) / 1000;
-        // we need to convert to km/s since getSpeed returns speed in m/s
-        avgSpeed = avgSpeed / 1000;
+            double duration = Float.parseFloat(mExerciseEntry.getDuration().substring(0, mExerciseEntry.getDuration().indexOf(" ")));
+            double avgSpeed = locationResult.getLastLocation().getSpeed() / (duration == 0 ? 1 : duration);
+            double climb = (locationResult.getLastLocation().getAltitude() - mExerciseEntry.getStartAltitude()) / 1000;
+            // we need to convert to km/s since getSpeed returns speed in m/s
+            avgSpeed = avgSpeed / 1000;
 
-        double distance = avgSpeed * duration;
-        String calorie = df.format(MyConstants.CALORIE_CONSTANT * distance) + " cals";
+            double distance = avgSpeed * duration;
+            String calorie = df.format(MyConstants.CALORIE_CONSTANT * distance) + " cals";
 
-        String sDistance  = df.format(distance) + " kms";
-        String sAvgSpeed = df.format(avgSpeed) + " km/s";
-        String sClimb = df.format(climb) + " kms";
+            String sDistance  = df.format(distance) + " kms";
+            String sAvgSpeed = df.format(avgSpeed) + " km/s";
+            String sClimb = df.format(climb) + " kms";
 
-        mExerciseEntry.setDistance(sDistance);
-        mExerciseEntry.setAvgSpeed(sAvgSpeed);
-        mExerciseEntry.setCalorie(calorie);
-        mExerciseEntry.setClimb(sClimb);
+            mExerciseEntry.setDistance(sDistance);
+            mExerciseEntry.setAvgSpeed(sAvgSpeed);
+            mExerciseEntry.setCalorie(calorie);
+            mExerciseEntry.setClimb(sClimb);
+        }
     }
 
     /*
@@ -656,11 +653,10 @@ public class MapActivity extends AppCompatActivity
      * We add the new location to the current Exercise's location list
      */
     private void addNewLocationToExercise(Intent intent) {
-        if (mExerciseEntry == null || intent  == null){
+        LocationResult locationResult = intent.getParcelableExtra(MyConstants.LOCATION_LIST);
+        if (mExerciseEntry == null || intent == null || locationResult == null){
             return;
         }
-
-        LocationResult locationResult = intent.getParcelableExtra(MyConstants.LOCATION_LIST);
 
         ArrayList<LatLng> oldLocationList = mExerciseEntry.getLocationList();
         double latitude = locationResult.getLastLocation().getLatitude();

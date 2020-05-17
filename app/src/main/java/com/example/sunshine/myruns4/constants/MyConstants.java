@@ -27,6 +27,7 @@ public class MyConstants {
     public static final String DETECTED_ACTIVITY = "detected_activity";
 
 
+
     public static String CURRENT_EXERCISE = "current_exercise";
 
     /* Template Literals for Map Activity */
@@ -49,6 +50,8 @@ public class MyConstants {
     public static final String CALORIES_DETECTED = "calories_detected";
     public static final String CLIMB_DETECTED = "climb_detected";
 
+    /* Permission Code */
+    public static final int PERMISSION_REQUEST_CODE = 1;
 
 
 }

@@ -66,10 +66,10 @@ public class LocationIntentService extends IntentService {
      * to perform action LocationTracking with the given parameters.
      * Caller must provide a valid currentExercise
      */
-    public static void startLocationTracking(Context context, ExerciseEntry currentExercise) {
+    public static void startLocationTracking(Context context) {
         Intent intent = new Intent(context, LocationIntentService.class);
         intent.setAction(LOCATION_TRACKING);
-        intent.putExtra(MyConstants.CURRENT_EXERCISE, currentExercise);
+//        intent.putExtra(MyConstants.CURRENT_EXERCISE, currentExercise);
         context.startService(intent);
         Log.d(TAG, "startLocationTracking()");
     }

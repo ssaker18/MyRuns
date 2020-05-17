@@ -2,12 +2,11 @@ package com.example.sunshine.myruns4.services;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.os.Bundle;
+import android.util.Log;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.example.sunshine.myruns4.constants.MyConstants;
-import com.example.sunshine.myruns4.models.ExerciseEntry;
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.DetectedActivity;
 
@@ -18,7 +17,6 @@ public class ActivityIntentService extends IntentService {
 
     private static final String TAG = ActivityIntentService.class.getName();
     private static final String ACTIVITY_RECOGNITION = "Activity Recognition";
-    private ExerciseEntry mCurrExercise;
 
     public ActivityIntentService() {
         super("ActivityIntentService");
@@ -31,13 +29,11 @@ public class ActivityIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {//retrieve currentExercise
         if (intent != null) {
-//            Bundle bundle = intent.getBundleExtra(MyConstants.CURRENT_EXERCISE); // ABUJA
-//            mCurrExercise = bundle.getParcelable(MyConstants.CURRENT_EXERCISE); // ABUJA
             final String action = intent.getAction();
             if (ACTIVITY_RECOGNITION.equals(action)) {
                 handleActivityRecognition(intent);
             }
-        }//OnCreate is only called once--use logic from onStartCommand in onCreate in order to achieve intervals
+        }
     }
 
     /*
@@ -64,24 +60,22 @@ public class ActivityIntentService extends IntentService {
         //FOR NOW: ONLY BROADCAST THE ACTIVITY TYPE WITH HIGHEST CONFIDENCE!
         //take mExerciseEntry
         //broadcast the exerciseEntry itself
-        //will be on onRecieve in MapActivity
+        //will be on onReceive in MapActivity
         for (int i = 0; i < detectedActivities.size(); i++) {
             if (max < detectedActivities.get(i).getConfidence()) {
                 max = detectedActivities.get(i).getConfidence();
                 maxIndex = i;
             }
         }
-        //set exerciseActivity's activity type to the activity type with the highest confidence value
-//        mCurrExercise.setActivityType(convertDetectedActivityToString(detectedActivities.get(maxIndex).getType())); // ABUJA
 
 
         Intent toBroadcast = new Intent(ACTIVITY_RECOGNITION);
-        //send updated ExerciseEntry
-//        toBroadcast.putExtra(MyConstants.CURRENT_EXERCISE, mCurrExercise); // ABUJA
-        toBroadcast.putExtra(MyConstants.DETECTED_ACTIVITY, convertDetectedActivityToString(detectedActivities.get(maxIndex).getType()));
-        //might need to be updated_exercises for the constant tag
-        LocalBroadcastManager.getInstance(this).sendBroadcast(toBroadcast);
+        String detectedActivity = convertDetectedActivityToString(detectedActivities.get(maxIndex).getType());
 
+        // send detected activity
+        toBroadcast.putExtra(MyConstants.DETECTED_ACTIVITY, convertDetectedActivityToString(detectedActivities.get(maxIndex).getType()));
+        LocalBroadcastManager.getInstance(this).sendBroadcast(toBroadcast);
+        Log.d(TAG, "handleActivityRecognition(): Detected Activity" + detectedActivity);
     }
 
     private String convertDetectedActivityToString(int type) {

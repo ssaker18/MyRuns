@@ -13,7 +13,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -149,25 +148,12 @@ public class ExerciseDataSource {
 
     /*
      * Converts back JSON to an ArrayList of LatLngs
-     * TODO: Json to Locations
      */
     private ArrayList<LatLng> JsonToLocations(String string) {
 
         Log.d(TAG, "JsonToLocations() received " + string);
         Gson gson = new Gson();
         ArrayList<LatLng> locations = gson.fromJson(string, new TypeToken<ArrayList<LatLng>>() {}.getType());
-
-//        try {
-//            jsonArray = new JSONArray(string);
-//            for (int i = 0; i < jsonArray.length(); i++) {
-//                // TODO: create new LatLng each time
-//                JSONObject jsonObj = jsonArray.getJSONObject(i);
-//                System.out.println(jsonObj);
-//            }
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-
         return locations;
     }
 
@@ -193,16 +179,11 @@ public class ExerciseDataSource {
     /*
      * Converts a location ArrayList to JSON in order to simplify
      * insertion into the database
-     * TODO: locationTOJSON
      */
     private String locationListToJSON(ArrayList<LatLng> locationList) {
         List<LatLng> list = locationList;
         Gson gson = new Gson();
         String json = gson.toJson(list, new TypeToken<List<LatLng>>() {}.getType());
-        //JSONArray jsArray = new JSONArray(list);
-//        for (int i = 0; i < locationList.size(); i++) {
-//            jsArray.put(locationList.get(i).latitude + " " + locationList.get(i).longitude);
-//        }
         Log.d(TAG, "convertToJSONArray() " + json);
         return json;
     }
